@@ -1,81 +1,103 @@
-﻿/*!
- * banana javascript library v1.5
- * based on the jquery.js
- * http://jquery.com/
+/*!
+ * banana javascript library v1.7
+ * based on the jquery
+ * https://github.com/cnzhangw/banana
  * date: 2015-05-04
  * author:zhangwei
- * 备注：banana.js,朋友们都说好
  */
 (function (factory) {
     var root = this;
     var count = 5;//检测5次
-    var handle;
-    var detection = function () {
-        var _$ = root.jQuery || root.top.jQuery || root.Zepto || root.top.Zepto;
-        if (!_$) {
+    var handler;
+    var todo = function () {
+        var $ = root.jQuery || root.top.jQuery || root.Zepto || root.top.Zepto;
+        if (!$) {
             if (count > 0) {
                 count--;
-                handle = setTimeout(function () {
-                    detection();
+                handler = setTimeout(function () {
+                    todo();
                 }, count > 0 ? 1000 : 5000);//最后一次放宽检测时间间隔
             } else {
-                if (handle && handle > 0) { clearTimeout(handle); }
-                var errorMsg = 'Banana javascript requires jquery or zepto';
-                if (root === root.top || root.location.href.toLowerCase() === root.top.location.href.toLowerCase()) {
-                    //alert(errorMsg);
-                    throw Error(errorMsg);
-                } else {
-                    throw Error(errorMsg);
-                }
+                if (handler && handler > 0) { clearTimeout(handler); }
+                var msg = 'banana requires jquery or zepto';
+                throw msg;
+                //if (root === root.top || root.location.href.toLowerCase() === root.top.location.href.toLowerCase()) {
+                //    throw msg;
+                //} else {
+                //    throw msg;
+                //}
             }
         } else {
-            if (handle && handle > 0) { clearTimeout(handle); }
-            factory.call(root, _$);
+            if (handler && handler > 0) { clearTimeout(handler); }
+            factory.call(root, $);
         }
     };
-    detection();
+    todo();
 }).call(window, function ($) {
+    //(function () {
+    //        // 备份jquery的ajax方法
+    //        var _ajax = $.ajax;
+    //        // 重写ajax方法
+    //        $.ajax = function (opt) {
+    //            var _success = opt && opt.success || function (a, b) { };
+    //            var _error = opt && opt.error || function (a, b) { };
+    //            var _opt = $.extend(opt, {
+    //                success: function (data, textStatus) {
+    //                    if (data.indexOf('html') != -1) {
+    //                        location.reload();
+    //                        return;
+    //                    }
+    //                    _success(data, textStatus);
+    //                },
+    //                error: function (data, textStatus) {
+    //                    if (data.responseText.indexOf('html') != -1) {
+    //                        location.reload();
+    //                        return;
+    //                    }
+    //                    _error(data, textStatus);
+    //                }
+    //            });
+    //            return _ajax(_opt);
+    //        }
+    //    })();
 
-    var root = this;
-    var Banana = window.Banana || {};//namespace
-    Banana.name = 'banana.js';
-    //version
-    Banana.version = '1.5';
-    Banana.info = 'banana.js 朋友们都说好';
-    //debug
-    Banana.DEBUG = false;
+    var root = this; // window
+    var core = window.banana || {}; // namespace
+    core.name = 'banana';
+    core.version = 'v1.6 banana，朋友们都说好。';
+    var DEBUG = false;
 
-    var extention = {};//拓展方法
+    //#region banana.constant
 
-    /***** Banana.Constant *****/
-    Banana.Constant = {
-        COMMAND_KEY: 'banana-cmd'
-        , COMMAND_ARGS: 'banana-args'
-        , FUNCTION_COMMAND_TRIGGER: 'buttonClick'
-        , FUNCTION_STARTUP: 'startup'
-        , FUNCTION_RESIZE: 'resize'
+    core.constant = {
+        COMMAND_KEY: 'banana-cmd' //事件绑定标记
+        , COMMAND_ARGS: 'banana-args' //事件绑定参数标记
+        , FUNCTION_COMMAND_TRIGGER: 'buttonClick' //事件触发函数
+        , FUNCTION_STARTUP: 'startup' //页面启动函数
+        , FUNCTION_RESIZE: 'resize' //页面resize函数
         , DEVICE: {
             PC: 'pc'
             , IPAD: 'ipad'
         },
         KEY_SYSVER: 'sysver'
+        , SPACE_STATE_KEY: 'space-state'
     };
 
-    /***** Banana.Global *****/
-    Banana.Global = function (win) {
+    //#endregion
+
+    //#region banana.g
+
+    var Global = function (win) {
         /// <summary>
         /// 全局对象，单例
         /// </summary>
         var inited = false;
         win = win || window;
-        //win._fn = {};//拓展方法
-
         var _init = function () {
             if (inited) return;
             _library().initMustache();
             _library().initEnumerable();
-            _library().initAvgrund();
-            _library().initCookie();
+            _library().initBase64();
             inited = true;
         };
         var _library = function () {
@@ -89,38 +111,38 @@
                     function p(a) { return "function" === typeof a } function y(a) { return a.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, "\\$&") } function A(a, c) { return null != a && "object" === typeof a && c in a } function C(a, c) {
                         function b(a) {
                             "string" === typeof a && (a = a.split(D, 2)); if (!x(a) || 2 !== a.length) throw Error("Invalid tags: " + a); m = new RegExp(y(a[0]) + "\\s*"); v = new RegExp("\\s*" +
-                y(a[1])); p = new RegExp("\\s*" + y("}" + a[1]))
-                        } if (!a) return []; var d = [], e = [], g = [], h = !1, f = !1, m, v, p; b(c || k.tags); for (var n = new w(a), r, l, q, u; !n.eos() ;) {
+                                y(a[1])); p = new RegExp("\\s*" + y("}" + a[1]))
+                        } if (!a) return []; var d = [], e = [], g = [], h = !1, f = !1, m, v, p; b(c || k.tags); for (var n = new w(a), r, l, q, u; !n.eos();) {
                             r = n.pos; if (q = n.scanUntil(m)) { u = 0; for (var t = q.length; u < t; ++u) if (l = q.charAt(u), E.call(F, l) ? f = !0 : g.push(e.length), e.push(["text", l, r, r + 1]), r += 1, "\n" === l) { if (h && !f) for (; g.length;) delete e[g.pop()]; else g = []; f = h = !1 } } if (!n.scan(m)) break; h = !0; l = n.scan(G) || "name"; n.scan(H); "=" === l ? (q = n.scanUntil(B), n.scan(B), n.scanUntil(v)) : "{" === l ? (q = n.scanUntil(p), n.scan(I), n.scanUntil(v),
-                            l = "&") : q = n.scanUntil(v); if (!n.scan(v)) throw Error("Unclosed tag at " + n.pos); u = [l, q, r, n.pos]; e.push(u); if ("#" === l || "^" === l) d.push(u); else if ("/" === l) { l = d.pop(); if (!l) throw Error('Unopened section "' + q + '" at ' + r); if (l[1] !== q) throw Error('Unclosed section "' + l[1] + '" at ' + r); } else "name" === l || "{" === l || "&" === l ? f = !0 : "=" === l && b(q)
+                                l = "&") : q = n.scanUntil(v); if (!n.scan(v)) throw Error("Unclosed tag at " + n.pos); u = [l, q, r, n.pos]; e.push(u); if ("#" === l || "^" === l) d.push(u); else if ("/" === l) { l = d.pop(); if (!l) throw Error('Unopened section "' + q + '" at ' + r); if (l[1] !== q) throw Error('Unclosed section "' + l[1] + '" at ' + r); } else "name" === l || "{" === l || "&" === l ? f = !0 : "=" === l && b(q)
                         } if (l = d.pop()) throw Error('Unclosed section "' + l[1] + '" at ' + n.pos); return J(K(e))
                     } function K(a) {
                         for (var c = [], b, d, e = 0, g = a.length; e < g; ++e) if (b = a[e]) "text" === b[0] && d && "text" === d[0] ?
-                        (d[1] += b[1], d[3] = b[3]) : (c.push(b), d = b); return c
+                            (d[1] += b[1], d[3] = b[3]) : (c.push(b), d = b); return c
                     } function J(a) { for (var c = [], b = c, d = [], e, g = 0, h = a.length; g < h; ++g) switch (e = a[g], e[0]) { case "#": case "^": b.push(e); d.push(e); b = e[4] = []; break; case "/": b = d.pop(); b[5] = e[2]; b = 0 < d.length ? d[d.length - 1][4] : c; break; default: b.push(e) } return c } function w(a) { this.tail = this.string = a; this.pos = 0 } function t(a, c) { this.view = a; this.cache = { ".": this.view }; this.parent = c } function m() { this.cache = {} } var L = Object.prototype.toString, x = Array.isArray || function (a) {
                         return "[object Array]" ===
-                        L.call(a)
+                            L.call(a)
                     }, E = RegExp.prototype.test, F = /\S/, M = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;", "/": "&#x2F;" }, H = /\s*/, D = /\s+/, B = /\s*=/, I = /\s*\}/, G = /#|\^|\/|>|\{|&|=|!/; w.prototype.eos = function () { return "" === this.tail }; w.prototype.scan = function (a) { a = this.tail.match(a); if (!a || 0 !== a.index) return ""; a = a[0]; this.tail = this.tail.substring(a.length); this.pos += a.length; return a }; w.prototype.scanUntil = function (a) {
                         a = this.tail.search(a); var c; switch (a) {
                             case -1: c = this.tail; this.tail = ""; break; case 0: c = "";
                                 break; default: c = this.tail.substring(0, a), this.tail = this.tail.substring(a)
                         } this.pos += c.length; return c
                     }; t.prototype.push = function (a) { return new t(a, this) }; t.prototype.lookup = function (a) { var c = this.cache, b; if (c.hasOwnProperty(a)) b = c[a]; else { for (var d = this, e, g, h = !1; d;) { if (0 < a.indexOf(".")) for (b = d.view, e = a.split("."), g = 0; null != b && g < e.length;) g === e.length - 1 && (h = A(b, e[g])), b = b[e[g++]]; else b = d.view[a], h = A(d.view, a); if (h) break; d = d.parent } c[a] = b } p(b) && (b = b.call(this.view)); return b }; m.prototype.clearCache =
-                    function () { this.cache = {} }; m.prototype.parse = function (a, c) { var b = this.cache, d = b[a]; null == d && (d = b[a] = C(a, c)); return d }; m.prototype.render = function (a, c, b) { var d = this.parse(a); c = c instanceof t ? c : new t(c); return this.renderTokens(d, c, b, a) }; m.prototype.renderTokens = function (a, c, b, d) {
-                        for (var e = "", g, h, f, k = 0, m = a.length; k < m; ++k) f = void 0, g = a[k], h = g[0], "#" === h ? f = this.renderSection(g, c, b, d) : "^" === h ? f = this.renderInverted(g, c, b, d) : ">" === h ? f = this.renderPartial(g, c, b, d) : "&" === h ? f = this.unescapedValue(g, c) : "name" ===
-                        h ? f = this.escapedValue(g, c) : "text" === h && (f = this.rawValue(g)), void 0 !== f && (e += f); return e
-                    }; m.prototype.renderSection = function (a, c, b, d) {
-                        function e(a) { return g.render(a, c, b) } var g = this, h = "", f = c.lookup(a[1]); if (f) {
-                            if (x(f)) for (var k = 0, m = f.length; k < m; ++k) h += this.renderTokens(a[4], c.push(f[k]), b, d); else if ("object" === typeof f || "string" === typeof f || "number" === typeof f) h += this.renderTokens(a[4], c.push(f), b, d); else if (p(f)) {
-                                if ("string" !== typeof d) throw Error("Cannot use higher-order sections without the original template");
-                                f = f.call(c.view, d.slice(a[3], a[5]), e); null != f && (h += f)
-                            } else h += this.renderTokens(a[4], c, b, d); return h
-                        }
-                    }; m.prototype.renderInverted = function (a, c, b, d) { var e = c.lookup(a[1]); if (!e || x(e) && 0 === e.length) return this.renderTokens(a[4], c, b, d) }; m.prototype.renderPartial = function (a, c, b) { if (b && (a = p(b) ? b(a[1]) : b[a[1]], null != a)) return this.renderTokens(this.parse(a), c, b, a) }; m.prototype.unescapedValue = function (a, c) { var b = c.lookup(a[1]); if (null != b) return b }; m.prototype.escapedValue = function (a, c) {
-                        var b = c.lookup(a[1]);
-                        if (null != b) return k.escape(b)
-                    }; m.prototype.rawValue = function (a) { return a[1] }; k.name = "mustache.js"; k.version = "2.1.2"; k.tags = ["{{", "}}"]; var z = new m; k.clearCache = function () { return z.clearCache() }; k.parse = function (a, c) { return z.parse(a, c) }; k.render = function (a, c, b) { if ("string" !== typeof a) throw c = TypeError, a = x(a) ? "array" : typeof a, new c('Invalid template! Template should be a "string" but "' + a + '" was given as the first argument for mustache#render(template, view, partials)'); return z.render(a, c, b) }; k.to_html =
-                    function (a, c, b, d) { a = k.render(a, c, b); if (p(d)) d(a); else return a }; k.escape = function (a) { return String(a).replace(/[&<>"'\/]/g, function (a) { return M[a] }) }; k.Scanner = w; k.Context = t; k.Writer = m
+                        function () { this.cache = {} }; m.prototype.parse = function (a, c) { var b = this.cache, d = b[a]; null == d && (d = b[a] = C(a, c)); return d }; m.prototype.render = function (a, c, b) { var d = this.parse(a); c = c instanceof t ? c : new t(c); return this.renderTokens(d, c, b, a) }; m.prototype.renderTokens = function (a, c, b, d) {
+                            for (var e = "", g, h, f, k = 0, m = a.length; k < m; ++k) f = void 0, g = a[k], h = g[0], "#" === h ? f = this.renderSection(g, c, b, d) : "^" === h ? f = this.renderInverted(g, c, b, d) : ">" === h ? f = this.renderPartial(g, c, b, d) : "&" === h ? f = this.unescapedValue(g, c) : "name" ===
+                                h ? f = this.escapedValue(g, c) : "text" === h && (f = this.rawValue(g)), void 0 !== f && (e += f); return e
+                        }; m.prototype.renderSection = function (a, c, b, d) {
+                            function e(a) { return g.render(a, c, b) } var g = this, h = "", f = c.lookup(a[1]); if (f) {
+                                if (x(f)) for (var k = 0, m = f.length; k < m; ++k) h += this.renderTokens(a[4], c.push(f[k]), b, d); else if ("object" === typeof f || "string" === typeof f || "number" === typeof f) h += this.renderTokens(a[4], c.push(f), b, d); else if (p(f)) {
+                                    if ("string" !== typeof d) throw Error("Cannot use higher-order sections without the original template");
+                                    f = f.call(c.view, d.slice(a[3], a[5]), e); null != f && (h += f)
+                                } else h += this.renderTokens(a[4], c, b, d); return h
+                            }
+                        }; m.prototype.renderInverted = function (a, c, b, d) { var e = c.lookup(a[1]); if (!e || x(e) && 0 === e.length) return this.renderTokens(a[4], c, b, d) }; m.prototype.renderPartial = function (a, c, b) { if (b && (a = p(b) ? b(a[1]) : b[a[1]], null != a)) return this.renderTokens(this.parse(a), c, b, a) }; m.prototype.unescapedValue = function (a, c) { var b = c.lookup(a[1]); if (null != b) return b }; m.prototype.escapedValue = function (a, c) {
+                            var b = c.lookup(a[1]);
+                            if (null != b) return k.escape(b)
+                        }; m.prototype.rawValue = function (a) { return a[1] }; k.name = "mustache.js"; k.version = "2.1.2"; k.tags = ["{{", "}}"]; var z = new m; k.clearCache = function () { return z.clearCache() }; k.parse = function (a, c) { return z.parse(a, c) }; k.render = function (a, c, b) { if ("string" !== typeof a) throw c = TypeError, a = x(a) ? "array" : typeof a, new c('Invalid template! Template should be a "string" but "' + a + '" was given as the first argument for mustache#render(template, view, partials)'); return z.render(a, c, b) }; k.to_html =
+                            function (a, c, b, d) { a = k.render(a, c, b); if (p(d)) d(a); else return a }; k.escape = function (a) { return String(a).replace(/[&<>"'\/]/g, function (a) { return M[a] }) }; k.Scanner = w; k.Context = t; k.Writer = m
                 });
                 //#endregion
             };
@@ -130,13 +152,13 @@
                     var e = function (a) { this.GetEnumerator = a }; e.Choice = function () { var a = arguments[0] instanceof Array ? arguments[0] : arguments; return new e(function () { return new h(k.Blank, function () { return this.Yield(a[Math.floor(Math.random() * a.length)]) }, k.Blank) }) }; e.Cycle = function () { var a = arguments[0] instanceof Array ? arguments[0] : arguments; return new e(function () { var b = 0; return new h(k.Blank, function () { b >= a.length && (b = 0); return this.Yield(a[b++]) }, k.Blank) }) }; e.Empty = function () {
                         return new e(function () {
                             return new h(k.Blank,
-                function () { return !1 }, k.Blank)
+                                function () { return !1 }, k.Blank)
                         })
                     }; e.From = function (a) {
                         if (null == a) return e.Empty(); if (a instanceof e) return a; if (typeof a == q.Number || typeof a == q.Boolean) return e.Repeat(a, 1); if (typeof a == q.String) return new e(function () { var b = 0; return new h(k.Blank, function () { return b < a.length ? this.Yield(a.charAt(b++)) : !1 }, k.Blank) }); if (typeof a != q.Function) {
                             if (typeof a.length == q.Number) return new l(a); if (!(a instanceof Object) && f.IsIEnumerable(a)) return new e(function () {
                                 var b = !0, c; return new h(function () { c = new Enumerator(a) },
-                                function () { b ? b = !1 : c.moveNext(); return c.atEnd() ? !1 : this.Yield(c.item()) }, k.Blank)
+                                    function () { b ? b = !1 : c.moveNext(); return c.atEnd() ? !1 : this.Yield(c.item()) }, k.Blank)
                             })
                         } return new e(function () { var b = [], c = 0; return new h(function () { for (var c in a) a[c] instanceof Function || b.push({ Key: c, Value: a[c] }) }, function () { return c < b.length ? this.Yield(b[c++]) : !1 }, k.Blank) })
                     }; e.Return = function (a) { return e.Repeat(a, 1) }; e.Matches = function (a, b, c) {
@@ -147,7 +169,7 @@
                     }; e.Range = function (a, b, c) { null == c && (c = 1); return e.ToInfinity(a, c).Take(b) }; e.RangeDown = function (a, b, c) { null == c && (c = 1); return e.ToNegativeInfinity(a, c).Take(b) }; e.RangeTo = function (a, b, c) { null == c && (c = 1); return a < b ? e.ToInfinity(a, c).TakeWhile(function (a) { return a <= b }) : e.ToNegativeInfinity(a, c).TakeWhile(function (a) { return a >= b }) }; e.Repeat = function (a, b) {
                         return null != b ? e.Repeat(a).Take(b) : new e(function () {
                             return new h(k.Blank,
-                            function () { return this.Yield(a) }, k.Blank)
+                                function () { return this.Yield(a) }, k.Blank)
                         })
                     }; e.RepeatWithFinalize = function (a, b) { a = f.CreateLambda(a); b = f.CreateLambda(b); return new e(function () { var c; return new h(function () { c = a() }, function () { return this.Yield(c) }, function () { null != c && (b(c), c = null) }) }) }; e.Generate = function (a, b) { if (null != b) return e.Generate(a).Take(b); a = f.CreateLambda(a); return new e(function () { return new h(k.Blank, function () { return this.Yield(a()) }, k.Blank) }) }; e.ToInfinity = function (a, b) {
                         null == a && (a = 0); null == b && (b = 1); return new e(function () {
@@ -157,36 +179,36 @@
                     }; e.ToNegativeInfinity = function (a, b) { null == a && (a = 0); null == b && (b = 1); return new e(function () { var c; return new h(function () { c = a + b }, function () { return this.Yield(c -= b) }, k.Blank) }) }; e.Unfold = function (a, b) { b = f.CreateLambda(b); return new e(function () { var c = !0, d; return new h(k.Blank, function () { if (c) return c = !1, d = a, this.Yield(d); d = b(d); return this.Yield(d) }, k.Blank) }) }; e.prototype = {
                         CascadeBreadthFirst: function (a, b) {
                             var c = this; a = f.CreateLambda(a);
-                            b = f.CreateLambda(b); return new e(function () { var d, g = 0, m = []; return new h(function () { d = c.GetEnumerator() }, function () { for (; ;) { if (d.MoveNext()) return m.push(d.Current()), this.Yield(b(d.Current(), g)); var c = e.From(m).SelectMany(function (b) { return a(b) }); if (c.Any()) g++, m = [], f.Dispose(d), d = c.GetEnumerator(); else return !1 } }, function () { f.Dispose(d) }) })
+                            b = f.CreateLambda(b); return new e(function () { var d, g = 0, m = []; return new h(function () { d = c.GetEnumerator() }, function () { for (; ;) { if (d.MoveNext()) return m.push(d.Current()), this.Yield(b(d.Current(), g)); var c = e.From(m).SelectMany(function (b) { return a(b) }); if (c.Any()) g++ , m = [], f.Dispose(d), d = c.GetEnumerator(); else return !1 } }, function () { f.Dispose(d) }) })
                         }, CascadeDepthFirst: function (a, b) {
                             var c = this; a = f.CreateLambda(a); b = f.CreateLambda(b); return new e(function () {
                                 var d = [], g; return new h(function () { g = c.GetEnumerator() },
-                                function () { for (; ;) { if (g.MoveNext()) { var c = b(g.Current(), d.length); d.push(g); g = e.From(a(g.Current())).GetEnumerator(); return this.Yield(c) } if (0 >= d.length) return !1; f.Dispose(g); g = d.pop() } }, function () { try { f.Dispose(g) } finally { e.From(d).ForEach(function (a) { a.Dispose() }) } })
+                                    function () { for (; ;) { if (g.MoveNext()) { var c = b(g.Current(), d.length); d.push(g); g = e.From(a(g.Current())).GetEnumerator(); return this.Yield(c) } if (0 >= d.length) return !1; f.Dispose(g); g = d.pop() } }, function () { try { f.Dispose(g) } finally { e.From(d).ForEach(function (a) { a.Dispose() }) } })
                             })
                         }, Flatten: function () {
                             var a = this; return new e(function () {
                                 var b, c = null; return new h(function () { b = a.GetEnumerator() }, function () {
                                     for (; ;) {
                                         if (null != c) { if (c.MoveNext()) return this.Yield(c.Current()); c = null } if (b.MoveNext()) if (b.Current() instanceof
-                                        Array) { f.Dispose(c); c = e.From(b.Current()).SelectMany(k.Identity).Flatten().GetEnumerator(); continue } else return this.Yield(b.Current()); return !1
+                                            Array) { f.Dispose(c); c = e.From(b.Current()).SelectMany(k.Identity).Flatten().GetEnumerator(); continue } else return this.Yield(b.Current()); return !1
                                     }
                                 }, function () { try { f.Dispose(b) } finally { f.Dispose(c) } })
                             })
                         }, Pairwise: function (a) { var b = this; a = f.CreateLambda(a); return new e(function () { var c; return new h(function () { c = b.GetEnumerator(); c.MoveNext() }, function () { var b = c.Current(); return c.MoveNext() ? this.Yield(a(b, c.Current())) : !1 }, function () { f.Dispose(c) }) }) }, Scan: function (a, b, c) {
                             if (null != c) return this.Scan(a,
-                            b).Select(c); var d; null == b ? (b = f.CreateLambda(a), d = !1) : (b = f.CreateLambda(b), d = !0); var g = this; return new e(function () { var c, e, p = !0; return new h(function () { c = g.GetEnumerator() }, function () { if (p) { p = !1; if (d) return this.Yield(e = a); if (c.MoveNext()) return this.Yield(e = c.Current()) } return c.MoveNext() ? this.Yield(e = b(e, c.Current())) : !1 }, function () { f.Dispose(c) }) })
+                                b).Select(c); var d; null == b ? (b = f.CreateLambda(a), d = !1) : (b = f.CreateLambda(b), d = !0); var g = this; return new e(function () { var c, e, p = !0; return new h(function () { c = g.GetEnumerator() }, function () { if (p) { p = !1; if (d) return this.Yield(e = a); if (c.MoveNext()) return this.Yield(e = c.Current()) } return c.MoveNext() ? this.Yield(e = b(e, c.Current())) : !1 }, function () { f.Dispose(c) }) })
                         }, Select: function (a) {
                             var b = this; a = f.CreateLambda(a); return new e(function () {
                                 var c, d = 0; return new h(function () { c = b.GetEnumerator() }, function () {
                                     return c.MoveNext() ?
-                                    this.Yield(a(c.Current(), d++)) : !1
+                                        this.Yield(a(c.Current(), d++)) : !1
                                 }, function () { f.Dispose(c) })
                             })
                         }, SelectMany: function (a, b) { var c = this; a = f.CreateLambda(a); null == b && (b = function (a, b) { return b }); b = f.CreateLambda(b); return new e(function () { var d, g = void 0, m = 0; return new h(function () { d = c.GetEnumerator() }, function () { if (void 0 === g && !d.MoveNext()) return !1; do { if (null == g) { var c = a(d.Current(), m++); g = e.From(c).GetEnumerator() } if (g.MoveNext()) return this.Yield(b(d.Current(), g.Current())); f.Dispose(g); g = null } while (d.MoveNext()); return !1 }, function () { try { f.Dispose(d) } finally { f.Dispose(g) } }) }) },
-                        Where: function (a) { a = f.CreateLambda(a); var b = this; return new e(function () { var c, d = 0; return new h(function () { c = b.GetEnumerator() }, function () { for (; c.MoveNext() ;) if (a(c.Current(), d++)) return this.Yield(c.Current()); return !1 }, function () { f.Dispose(c) }) }) }, OfType: function (a) {
+                        Where: function (a) { a = f.CreateLambda(a); var b = this; return new e(function () { var c, d = 0; return new h(function () { c = b.GetEnumerator() }, function () { for (; c.MoveNext();) if (a(c.Current(), d++)) return this.Yield(c.Current()); return !1 }, function () { f.Dispose(c) }) }) }, OfType: function (a) {
                             var b; switch (a) { case Number: b = q.Number; break; case String: b = q.String; break; case Boolean: b = q.Boolean; break; case Function: b = q.Function; break; default: b = null } return null === b ? this.Where(function (b) { return b instanceof a }) : this.Where(function (a) {
                                 return typeof a ===
-                                b
+                                    b
                             })
                         }, Zip: function (a, b) { b = f.CreateLambda(b); var c = this; return new e(function () { var d, g, m = 0; return new h(function () { d = c.GetEnumerator(); g = e.From(a).GetEnumerator() }, function () { return d.MoveNext() && g.MoveNext() ? this.Yield(b(d.Current(), g.Current(), m++)) : !1 }, function () { try { f.Dispose(d) } finally { f.Dispose(g) } }) }) }, Join: function (a, b, c, d, g) {
                             b = f.CreateLambda(b); c = f.CreateLambda(c); d = f.CreateLambda(d); g = f.CreateLambda(g); var m = this; return new e(function () {
@@ -200,51 +222,51 @@
                                 var n = m.GetEnumerator(), p = null; return new h(function () { n = m.GetEnumerator(); p = e.From(a).ToLookup(c, k.Identity, g) }, function () {
                                     if (n.MoveNext()) {
                                         var a =
-                                        p.Get(b(n.Current())); return this.Yield(d(n.Current(), a))
+                                            p.Get(b(n.Current())); return this.Yield(d(n.Current(), a))
                                     } return !1
                                 }, function () { f.Dispose(n) })
                             })
-                        }, All: function (a) { a = f.CreateLambda(a); var b = !0; this.ForEach(function (c) { if (!a(c)) return b = !1 }); return b }, Any: function (a) { a = f.CreateLambda(a); var b = this.GetEnumerator(); try { if (0 == arguments.length) return b.MoveNext(); for (; b.MoveNext() ;) if (a(b.Current())) return !0; return !1 } finally { f.Dispose(b) } }, Concat: function (a) {
+                        }, All: function (a) { a = f.CreateLambda(a); var b = !0; this.ForEach(function (c) { if (!a(c)) return b = !1 }); return b }, Any: function (a) { a = f.CreateLambda(a); var b = this.GetEnumerator(); try { if (0 == arguments.length) return b.MoveNext(); for (; b.MoveNext();) if (a(b.Current())) return !0; return !1 } finally { f.Dispose(b) } }, Concat: function (a) {
                             var b = this; return new e(function () {
                                 var c, d; return new h(function () { c = b.GetEnumerator() }, function () {
                                     if (null ==
-                                    d) { if (c.MoveNext()) return this.Yield(c.Current()); d = e.From(a).GetEnumerator() } return d.MoveNext() ? this.Yield(d.Current()) : !1
+                                        d) { if (c.MoveNext()) return this.Yield(c.Current()); d = e.From(a).GetEnumerator() } return d.MoveNext() ? this.Yield(d.Current()) : !1
                                 }, function () { try { f.Dispose(c) } finally { f.Dispose(d) } })
                             })
-                        }, Insert: function (a, b) { var c = this; return new e(function () { var d, g, m = 0, n = !1; return new h(function () { d = c.GetEnumerator(); g = e.From(b).GetEnumerator() }, function () { return m == a && g.MoveNext() ? (n = !0, this.Yield(g.Current())) : d.MoveNext() ? (m++, this.Yield(d.Current())) : !n && g.MoveNext() ? this.Yield(g.Current()) : !1 }, function () { try { f.Dispose(d) } finally { f.Dispose(g) } }) }) },
-                        Alternate: function (a) { a = e.Return(a); return this.SelectMany(function (b) { return e.Return(b).Concat(a) }).TakeExceptLast() }, Contains: function (a, b) { b = f.CreateLambda(b); var c = this.GetEnumerator(); try { for (; c.MoveNext() ;) if (b(c.Current()) === a) return !0; return !1 } finally { f.Dispose(c) } }, DefaultIfEmpty: function (a) { var b = this; return new e(function () { var c, d = !0; return new h(function () { c = b.GetEnumerator() }, function () { return c.MoveNext() ? (d = !1, this.Yield(c.Current())) : d ? (d = !1, this.Yield(a)) : !1 }, function () { f.Dispose(c) }) }) },
-                        Distinct: function (a) { return this.Except(e.Empty(), a) }, Except: function (a, b) { b = f.CreateLambda(b); var c = this; return new e(function () { var d, g; return new h(function () { d = c.GetEnumerator(); g = new t(b); e.From(a).ForEach(function (a) { g.Add(a) }) }, function () { for (; d.MoveNext() ;) { var a = d.Current(); if (!g.Contains(a)) return g.Add(a), this.Yield(a) } return !1 }, function () { f.Dispose(d) }) }) }, Intersect: function (a, b) {
+                        }, Insert: function (a, b) { var c = this; return new e(function () { var d, g, m = 0, n = !1; return new h(function () { d = c.GetEnumerator(); g = e.From(b).GetEnumerator() }, function () { return m == a && g.MoveNext() ? (n = !0, this.Yield(g.Current())) : d.MoveNext() ? (m++ , this.Yield(d.Current())) : !n && g.MoveNext() ? this.Yield(g.Current()) : !1 }, function () { try { f.Dispose(d) } finally { f.Dispose(g) } }) }) },
+                        Alternate: function (a) { a = e.Return(a); return this.SelectMany(function (b) { return e.Return(b).Concat(a) }).TakeExceptLast() }, Contains: function (a, b) { b = f.CreateLambda(b); var c = this.GetEnumerator(); try { for (; c.MoveNext();) if (b(c.Current()) === a) return !0; return !1 } finally { f.Dispose(c) } }, DefaultIfEmpty: function (a) { var b = this; return new e(function () { var c, d = !0; return new h(function () { c = b.GetEnumerator() }, function () { return c.MoveNext() ? (d = !1, this.Yield(c.Current())) : d ? (d = !1, this.Yield(a)) : !1 }, function () { f.Dispose(c) }) }) },
+                        Distinct: function (a) { return this.Except(e.Empty(), a) }, Except: function (a, b) { b = f.CreateLambda(b); var c = this; return new e(function () { var d, g; return new h(function () { d = c.GetEnumerator(); g = new t(b); e.From(a).ForEach(function (a) { g.Add(a) }) }, function () { for (; d.MoveNext();) { var a = d.Current(); if (!g.Contains(a)) return g.Add(a), this.Yield(a) } return !1 }, function () { f.Dispose(d) }) }) }, Intersect: function (a, b) {
                             b = f.CreateLambda(b); var c = this; return new e(function () {
                                 var d, g, m; return new h(function () {
                                     d = c.GetEnumerator();
                                     g = new t(b); e.From(a).ForEach(function (a) { g.Add(a) }); m = new t(b)
-                                }, function () { for (; d.MoveNext() ;) { var a = d.Current(); if (!m.Contains(a) && g.Contains(a)) return m.Add(a), this.Yield(a) } return !1 }, function () { f.Dispose(d) })
+                                }, function () { for (; d.MoveNext();) { var a = d.Current(); if (!m.Contains(a) && g.Contains(a)) return m.Add(a), this.Yield(a) } return !1 }, function () { f.Dispose(d) })
                             })
-                        }, SequenceEqual: function (a, b) { b = f.CreateLambda(b); var c = this.GetEnumerator(); try { var d = e.From(a).GetEnumerator(); try { for (; c.MoveNext() ;) if (!d.MoveNext() || b(c.Current()) !== b(d.Current())) return !1; return d.MoveNext() ? !1 : !0 } finally { f.Dispose(d) } } finally { f.Dispose(c) } }, Union: function (a, b) {
+                        }, SequenceEqual: function (a, b) { b = f.CreateLambda(b); var c = this.GetEnumerator(); try { var d = e.From(a).GetEnumerator(); try { for (; c.MoveNext();) if (!d.MoveNext() || b(c.Current()) !== b(d.Current())) return !1; return d.MoveNext() ? !1 : !0 } finally { f.Dispose(d) } } finally { f.Dispose(c) } }, Union: function (a, b) {
                             b =
-                            f.CreateLambda(b); var c = this; return new e(function () { var d, g, m; return new h(function () { d = c.GetEnumerator(); m = new t(b) }, function () { var b; if (void 0 === g) { for (; d.MoveNext() ;) if (b = d.Current(), !m.Contains(b)) return m.Add(b), this.Yield(b); g = e.From(a).GetEnumerator() } for (; g.MoveNext() ;) if (b = g.Current(), !m.Contains(b)) return m.Add(b), this.Yield(b); return !1 }, function () { try { f.Dispose(d) } finally { f.Dispose(g) } }) })
+                                f.CreateLambda(b); var c = this; return new e(function () { var d, g, m; return new h(function () { d = c.GetEnumerator(); m = new t(b) }, function () { var b; if (void 0 === g) { for (; d.MoveNext();) if (b = d.Current(), !m.Contains(b)) return m.Add(b), this.Yield(b); g = e.From(a).GetEnumerator() } for (; g.MoveNext();) if (b = g.Current(), !m.Contains(b)) return m.Add(b), this.Yield(b); return !1 }, function () { try { f.Dispose(d) } finally { f.Dispose(g) } }) })
                         }, OrderBy: function (a) { return new r(this, a, !1) }, OrderByDescending: function (a) {
                             return new r(this, a,
-                            !0)
+                                !0)
                         }, Reverse: function () { var a = this; return new e(function () { var b, c; return new h(function () { b = a.ToArray(); c = b.length }, function () { return 0 < c ? this.Yield(b[--c]) : !1 }, k.Blank) }) }, Shuffle: function () { var a = this; return new e(function () { var b; return new h(function () { b = a.ToArray() }, function () { if (0 < b.length) { var a = Math.floor(Math.random() * b.length); return this.Yield(b.splice(a, 1)[0]) } return !1 }, k.Blank) }) }, GroupBy: function (a, b, c, d) {
                             var g = this; a = f.CreateLambda(a); b = f.CreateLambda(b); null != c && (c = f.CreateLambda(c));
-                            d = f.CreateLambda(d); return new e(function () { var e; return new h(function () { e = g.ToLookup(a, b, d).ToEnumerable().GetEnumerator() }, function () { for (; e.MoveNext() ;) return null == c ? this.Yield(e.Current()) : this.Yield(c(e.Current().Key(), e.Current())); return !1 }, function () { f.Dispose(e) }) })
+                            d = f.CreateLambda(d); return new e(function () { var e; return new h(function () { e = g.ToLookup(a, b, d).ToEnumerable().GetEnumerator() }, function () { for (; e.MoveNext();) return null == c ? this.Yield(e.Current()) : this.Yield(c(e.Current().Key(), e.Current())); return !1 }, function () { f.Dispose(e) }) })
                         }, PartitionBy: function (a, b, c, d) {
                             var g = this; a = f.CreateLambda(a); b = f.CreateLambda(b); d = f.CreateLambda(d); var m; null == c ? (m = !1, c = function (a, b) { return new w(a, b) }) : (m = !0, c = f.CreateLambda(c)); return new e(function () {
                                 var n, p, k, l = [];
-                                return new h(function () { n = g.GetEnumerator(); n.MoveNext() && (p = a(n.Current()), k = d(p), l.push(b(n.Current()))) }, function () { for (var g; 1 == (g = n.MoveNext()) ;) if (k === d(a(n.Current()))) l.push(b(n.Current())); else break; if (0 < l.length) { var f = m ? c(p, e.From(l)) : c(p, l); g ? (p = a(n.Current()), k = d(p), l = [b(n.Current())]) : l = []; return this.Yield(f) } return !1 }, function () { f.Dispose(n) })
+                                return new h(function () { n = g.GetEnumerator(); n.MoveNext() && (p = a(n.Current()), k = d(p), l.push(b(n.Current()))) }, function () { for (var g; 1 == (g = n.MoveNext());) if (k === d(a(n.Current()))) l.push(b(n.Current())); else break; if (0 < l.length) { var f = m ? c(p, e.From(l)) : c(p, l); g ? (p = a(n.Current()), k = d(p), l = [b(n.Current())]) : l = []; return this.Yield(f) } return !1 }, function () { f.Dispose(n) })
                             })
                         }, BufferWithCount: function (a) {
                             var b = this; return new e(function () {
                                 var c; return new h(function () { c = b.GetEnumerator() }, function () {
                                     for (var b =
-                                    [], g = 0; c.MoveNext() ;) if (b.push(c.Current()), ++g >= a) return this.Yield(b); return 0 < b.length ? this.Yield(b) : !1
+                                        [], g = 0; c.MoveNext();) if (b.push(c.Current()), ++g >= a) return this.Yield(b); return 0 < b.length ? this.Yield(b) : !1
                                 }, function () { f.Dispose(c) })
                             })
                         }, Aggregate: function (a, b, c) { return this.Scan(a, b, c).Last() }, Average: function (a) { a = f.CreateLambda(a); var b = 0, c = 0; this.ForEach(function (d) { b += a(d); ++c }); return b / c }, Count: function (a) { a = null == a ? k.True : f.CreateLambda(a); var b = 0; this.ForEach(function (c, d) { a(c, d) && ++b }); return b }, Max: function (a) {
                             null == a && (a = k.Identity); return this.Select(a).Aggregate(function (a, c) {
                                 return a >
-                                c ? a : c
+                                    c ? a : c
                             })
                         }, Min: function (a) { null == a && (a = k.Identity); return this.Select(a).Aggregate(function (a, c) { return a < c ? a : c }) }, MaxBy: function (a) { a = f.CreateLambda(a); return this.Aggregate(function (b, c) { return a(b) > a(c) ? b : c }) }, MinBy: function (a) { a = f.CreateLambda(a); return this.Aggregate(function (b, c) { return a(b) < a(c) ? b : c }) }, Sum: function (a) { null == a && (a = k.Identity); return this.Select(a).Aggregate(0, function (a, c) { return a + c }) }, ElementAt: function (a) {
                             var b, c = !1; this.ForEach(function (d, g) { if (g == a) return b = d, c = !0, !1 }); if (!c) throw Error("index is less than 0 or greater than or equal to the number of elements in source.");
@@ -253,41 +275,41 @@
                             if (null != a) return this.Where(a).Last();
                             var b, c = !1; this.ForEach(function (a) { c = !0; b = a }); if (!c) throw Error("Last:No element satisfies the condition."); return b
                         }, LastOrDefault: function (a, b) { if (null != b) return this.Where(b).LastOrDefault(a); var c, d = !1; this.ForEach(function (a) { d = !0; c = a }); return d ? c : a }, Single: function (a) { if (null != a) return this.Where(a).Single(); var b, c = !1; this.ForEach(function (a) { if (c) throw Error("Single:sequence contains more than one element."); c = !0; b = a }); if (!c) throw Error("Single:No element satisfies the condition."); return b },
-                        SingleOrDefault: function (a, b) { if (null != b) return this.Where(b).SingleOrDefault(a); var c, d = !1; this.ForEach(function (a) { if (d) throw Error("Single:sequence contains more than one element."); d = !0; c = a }); return d ? c : a }, Skip: function (a) { var b = this; return new e(function () { var c, d = 0; return new h(function () { for (c = b.GetEnumerator() ; d++ < a && c.MoveNext() ;); }, function () { return c.MoveNext() ? this.Yield(c.Current()) : !1 }, function () { f.Dispose(c) }) }) }, SkipWhile: function (a) {
+                        SingleOrDefault: function (a, b) { if (null != b) return this.Where(b).SingleOrDefault(a); var c, d = !1; this.ForEach(function (a) { if (d) throw Error("Single:sequence contains more than one element."); d = !0; c = a }); return d ? c : a }, Skip: function (a) { var b = this; return new e(function () { var c, d = 0; return new h(function () { for (c = b.GetEnumerator(); d++ < a && c.MoveNext();); }, function () { return c.MoveNext() ? this.Yield(c.Current()) : !1 }, function () { f.Dispose(c) }) }) }, SkipWhile: function (a) {
                             a = f.CreateLambda(a); var b = this; return new e(function () {
                                 var c,
-                                d = 0, g = !1; return new h(function () { c = b.GetEnumerator() }, function () { for (; !g;) if (c.MoveNext()) { if (!a(c.Current(), d++)) return g = !0, this.Yield(c.Current()) } else return !1; return c.MoveNext() ? this.Yield(c.Current()) : !1 }, function () { f.Dispose(c) })
+                                    d = 0, g = !1; return new h(function () { c = b.GetEnumerator() }, function () { for (; !g;) if (c.MoveNext()) { if (!a(c.Current(), d++)) return g = !0, this.Yield(c.Current()) } else return !1; return c.MoveNext() ? this.Yield(c.Current()) : !1 }, function () { f.Dispose(c) })
                             })
                         }, Take: function (a) { var b = this; return new e(function () { var c, d = 0; return new h(function () { c = b.GetEnumerator() }, function () { return d++ < a && c.MoveNext() ? this.Yield(c.Current()) : !1 }, function () { f.Dispose(c) }) }) }, TakeWhile: function (a) {
                             a = f.CreateLambda(a); var b = this; return new e(function () {
                                 var c,
-                                d = 0; return new h(function () { c = b.GetEnumerator() }, function () { return c.MoveNext() && a(c.Current(), d++) ? this.Yield(c.Current()) : !1 }, function () { f.Dispose(c) })
+                                    d = 0; return new h(function () { c = b.GetEnumerator() }, function () { return c.MoveNext() && a(c.Current(), d++) ? this.Yield(c.Current()) : !1 }, function () { f.Dispose(c) })
                             })
-                        }, TakeExceptLast: function (a) { null == a && (a = 1); var b = this; return new e(function () { if (0 >= a) return b.GetEnumerator(); var c, d = []; return new h(function () { c = b.GetEnumerator() }, function () { for (; c.MoveNext() ;) { if (d.length == a) return d.push(c.Current()), this.Yield(d.shift()); d.push(c.Current()) } return !1 }, function () { f.Dispose(c) }) }) }, TakeFromLast: function (a) {
+                        }, TakeExceptLast: function (a) { null == a && (a = 1); var b = this; return new e(function () { if (0 >= a) return b.GetEnumerator(); var c, d = []; return new h(function () { c = b.GetEnumerator() }, function () { for (; c.MoveNext();) { if (d.length == a) return d.push(c.Current()), this.Yield(d.shift()); d.push(c.Current()) } return !1 }, function () { f.Dispose(c) }) }) }, TakeFromLast: function (a) {
                             if (0 >=
-                            a || null == a) return e.Empty(); var b = this; return new e(function () { var c, d, g = []; return new h(function () { c = b.GetEnumerator() }, function () { for (; c.MoveNext() ;) g.length == a && g.shift(), g.push(c.Current()); null == d && (d = e.From(g).GetEnumerator()); return d.MoveNext() ? this.Yield(d.Current()) : !1 }, function () { f.Dispose(d) }) })
+                                a || null == a) return e.Empty(); var b = this; return new e(function () { var c, d, g = []; return new h(function () { c = b.GetEnumerator() }, function () { for (; c.MoveNext();) g.length == a && g.shift(), g.push(c.Current()); null == d && (d = e.From(g).GetEnumerator()); return d.MoveNext() ? this.Yield(d.Current()) : !1 }, function () { f.Dispose(d) }) })
                         }, IndexOf: function (a) { var b = null; this.ForEach(function (c, d) { if (c === a) return b = d, !0 }); return null !== b ? b : -1 }, LastIndexOf: function (a) { var b = -1; this.ForEach(function (c, d) { c === a && (b = d) }); return b }, ToArray: function () {
                             var a =
-                            []; this.ForEach(function (b) { a.push(b) }); return a
+                                []; this.ForEach(function (b) { a.push(b) }); return a
                         }, ToLookup: function (a, b, c) { a = f.CreateLambda(a); b = f.CreateLambda(b); c = f.CreateLambda(c); var d = new t(c); this.ForEach(function (c) { var e = a(c); c = b(c); var f = d.Get(e); void 0 !== f ? f.push(c) : d.Add(e, [c]) }); return new x(d) }, ToObject: function (a, b) { a = f.CreateLambda(a); b = f.CreateLambda(b); var c = {}; this.ForEach(function (d) { c[a(d)] = b(d) }); return c }, ToDictionary: function (a, b, c) {
                             a = f.CreateLambda(a); b = f.CreateLambda(b); c = f.CreateLambda(c); var d = new t(c); this.ForEach(function (c) {
                                 d.Add(a(c),
-                                b(c))
+                                    b(c))
                             }); return d
                         }, ToJSON: function (a, b) { return JSON.stringify(this.ToArray(), a, b) }, ToString: function (a, b) { null == a && (a = ""); null == b && (b = k.Identity); return this.Select(b).ToArray().join(a) }, Do: function (a) { var b = this; a = f.CreateLambda(a); return new e(function () { var c, d = 0; return new h(function () { c = b.GetEnumerator() }, function () { return c.MoveNext() ? (a(c.Current(), d++), this.Yield(c.Current())) : !1 }, function () { f.Dispose(c) }) }) }, ForEach: function (a) {
                             a = f.CreateLambda(a); var b = 0, c = this.GetEnumerator(); try {
                                 for (; c.MoveNext() &&
-                                !1 !== a(c.Current(), b++) ;);
+                                    !1 !== a(c.Current(), b++););
                             } finally { f.Dispose(c) }
-                        }, Write: function (a, b) { null == a && (a = ""); b = f.CreateLambda(b); var c = !0; this.ForEach(function (d) { c ? c = !1 : document.write(a); document.write(b(d)) }) }, WriteLine: function (a) { a = f.CreateLambda(a); this.ForEach(function (b) { document.write(a(b)); document.write("<br />") }) }, Force: function () { var a = this.GetEnumerator(); try { for (; a.MoveNext() ;); } finally { f.Dispose(a) } }, Let: function (a) {
+                        }, Write: function (a, b) { null == a && (a = ""); b = f.CreateLambda(b); var c = !0; this.ForEach(function (d) { c ? c = !1 : document.write(a); document.write(b(d)) }) }, WriteLine: function (a) { a = f.CreateLambda(a); this.ForEach(function (b) { document.write(a(b)); document.write("<br />") }) }, Force: function () { var a = this.GetEnumerator(); try { for (; a.MoveNext();); } finally { f.Dispose(a) } }, Let: function (a) {
                             a = f.CreateLambda(a); var b = this; return new e(function () {
                                 var c; return new h(function () { c = e.From(a(b)).GetEnumerator() },
-                                function () { return c.MoveNext() ? this.Yield(c.Current()) : !1 }, function () { f.Dispose(c) })
+                                    function () { return c.MoveNext() ? this.Yield(c.Current()) : !1 }, function () { f.Dispose(c) })
                             })
                         }, Share: function () { var a = this, b; return new e(function () { return new h(function () { null == b && (b = a.GetEnumerator()) }, function () { return b.MoveNext() ? this.Yield(b.Current()) : !1 }, k.Blank) }) }, MemoizeAll: function () { var a = this, b, c; return new e(function () { var d = -1; return new h(function () { null == c && (c = a.GetEnumerator(), b = []) }, function () { d++; return b.length <= d ? c.MoveNext() ? this.Yield(b[d] = c.Current()) : !1 : this.Yield(b[d]) }, k.Blank) }) },
                         Catch: function (a) { a = f.CreateLambda(a); var b = this; return new e(function () { var c; return new h(function () { c = b.GetEnumerator() }, function () { try { return c.MoveNext() ? this.Yield(c.Current()) : !1 } catch (b) { return a(b), !1 } }, function () { f.Dispose(c) }) }) }, Finally: function (a) { a = f.CreateLambda(a); var b = this; return new e(function () { var c; return new h(function () { c = b.GetEnumerator() }, function () { return c.MoveNext() ? this.Yield(c.Current()) : !1 }, function () { try { f.Dispose(c) } finally { a() } }) }) }, Trace: function (a, b) {
                             null == a &&
-                            (a = "Trace"); b = f.CreateLambda(b); return this.Do(function (c) { console.log(a, ":", b(c)) })
+                                (a = "Trace"); b = f.CreateLambda(b); return this.Do(function (c) { console.log(a, ":", b(c)) })
                         }
                     }; var k = { Identity: function (a) { return a }, True: function () { return !0 }, Blank: function () { } }, q = { Boolean: "boolean", Number: "number", String: "string", Object: "object", Undefined: "undefined", Function: "function" }, f = {
                         CreateLambda: function (a) {
@@ -300,297 +322,304 @@
                         var d = new y, g = 0; this.Current = d.Current; this.MoveNext = function () { try { switch (g) { case 0: g = 1, a(); case 1: if (b.apply(d)) return !0; this.Dispose(); return !1; case 2: return !1 } } catch (c) { throw this.Dispose(), c; } }; this.Dispose = function () {
                             if (1 == g) try { c() } finally {
                                 g =
-                                2
+                                    2
                             }
                         }
                     }, y = function () { var a = null; this.Current = function () { return a }; this.Yield = function (b) { a = b; return !0 } }, r = function (a, b, c, d) { this.source = a; this.keySelector = f.CreateLambda(b); this.descending = c; this.parent = d }; r.prototype = new e; r.prototype.CreateOrderedEnumerable = function (a, b) { return new r(this.source, a, b, this) }; r.prototype.ThenBy = function (a) { return this.CreateOrderedEnumerable(a, !1) }; r.prototype.ThenByDescending = function (a) { return this.CreateOrderedEnumerable(a, !0) }; r.prototype.GetEnumerator = function () {
                         var a =
-                        this, b, c, d = 0; return new h(function () { b = []; c = []; a.source.ForEach(function (a, d) { b.push(a); c.push(d) }); var d = u.Create(a, null); d.GenerateKeys(b); c.sort(function (a, b) { return d.Compare(a, b) }) }, function () { return d < c.length ? this.Yield(b[c[d++]]) : !1 }, k.Blank)
+                            this, b, c, d = 0; return new h(function () { b = []; c = []; a.source.ForEach(function (a, d) { b.push(a); c.push(d) }); var d = u.Create(a, null); d.GenerateKeys(b); c.sort(function (a, b) { return d.Compare(a, b) }) }, function () { return d < c.length ? this.Yield(b[c[d++]]) : !1 }, k.Blank)
                     }; var u = function (a, b, c) { this.keySelector = a; this.descending = b; this.child = c; this.keys = null }; u.Create = function (a, b) { var c = new u(a.keySelector, a.descending, b); return null != a.parent ? u.Create(a.parent, c) : c }; u.prototype.GenerateKeys = function (a) {
                         for (var b = a.length,
-                        c = this.keySelector, d = Array(b), g = 0; g < b; g++) d[g] = c(a[g]); this.keys = d; null != this.child && this.child.GenerateKeys(a)
+                            c = this.keySelector, d = Array(b), g = 0; g < b; g++) d[g] = c(a[g]); this.keys = d; null != this.child && this.child.GenerateKeys(a)
                     }; u.prototype.Compare = function (a, b) { var c = f.Compare(this.keys[a], this.keys[b]); if (0 == c) { if (null != this.child) return this.child.Compare(a, b); c = f.Compare(a, b) } return this.descending ? -c : c }; var l = function (a) { this.source = a }; l.prototype = new e; l.prototype.Any = function (a) { return null == a ? 0 < this.source.length : e.prototype.Any.apply(this, arguments) }; l.prototype.Count = function (a) {
                         return null == a ? this.source.length :
-                        e.prototype.Count.apply(this, arguments)
+                            e.prototype.Count.apply(this, arguments)
                     }; l.prototype.ElementAt = function (a) { return 0 <= a && a < this.source.length ? this.source[a] : e.prototype.ElementAt.apply(this, arguments) }; l.prototype.ElementAtOrDefault = function (a, b) { return 0 <= a && a < this.source.length ? this.source[a] : b }; l.prototype.First = function (a) { return null == a && 0 < this.source.length ? this.source[0] : e.prototype.First.apply(this, arguments) }; l.prototype.FirstOrDefault = function (a, b) {
                         return null != b ? e.prototype.FirstOrDefault.apply(this, arguments) : 0 < this.source.length ?
-                        this.source[0] : a
+                            this.source[0] : a
                     }; l.prototype.Last = function (a) { return null == a && 0 < this.source.length ? this.source[this.source.length - 1] : e.prototype.Last.apply(this, arguments) }; l.prototype.LastOrDefault = function (a, b) { return null != b ? e.prototype.LastOrDefault.apply(this, arguments) : 0 < this.source.length ? this.source[this.source.length - 1] : a }; l.prototype.Skip = function (a) { var b = this.source; return new e(function () { var c; return new h(function () { c = 0 > a ? 0 : a }, function () { return c < b.length ? this.Yield(b[c++]) : !1 }, k.Blank) }) }; l.prototype.TakeExceptLast =
-                    function (a) { null == a && (a = 1); return this.Take(this.source.length - a) }; l.prototype.TakeFromLast = function (a) { return this.Skip(this.source.length - a) }; l.prototype.Reverse = function () { var a = this.source; return new e(function () { var b; return new h(function () { b = a.length }, function () { return 0 < b ? this.Yield(a[--b]) : !1 }, k.Blank) }) }; l.prototype.SequenceEqual = function (a, b) { return (a instanceof l || a instanceof Array) && null == b && e.From(a).Count() != this.Count() ? !1 : e.prototype.SequenceEqual.apply(this, arguments) }; l.prototype.ToString =
-                    function (a, b) { if (null != b || !(this.source instanceof Array)) return e.prototype.ToString.apply(this, arguments); null == a && (a = ""); return this.source.join(a) }; l.prototype.GetEnumerator = function () { var a = this.source, b = 0; return new h(k.Blank, function () { return b < a.length ? this.Yield(a[b++]) : !1 }, k.Blank) }; var t = function () {
-                        var a = function (a) { return null === a ? "null" : void 0 === a ? "undefined" : typeof a.toString === q.Function ? a.toString() : Object.prototype.toString.call(a) }, b = function (a, b) {
-                            this.Key = a; this.Value = b; this.Next =
-                            this.Prev = null
-                        }, c = function () { this.Last = this.First = null }; c.prototype = { AddLast: function (a) { null != this.Last ? (this.Last.Next = a, a.Prev = this.Last, this.Last = a) : this.First = this.Last = a }, Replace: function (a, b) { null != a.Prev ? (a.Prev.Next = b, b.Prev = a.Prev) : this.First = b; null != a.Next ? (a.Next.Prev = b, b.Next = a.Next) : this.Last = b }, Remove: function (a) { null != a.Prev ? a.Prev.Next = a.Next : this.First = a.Next; null != a.Next ? a.Next.Prev = a.Prev : this.Last = a.Prev } }; var d = function (a) {
-                            this.count = 0; this.entryList = new c; this.buckets = {}; this.compareSelector =
-                            null == a ? k.Identity : a
-                        }; d.prototype = {
-                            Add: function (c, d) { var e = this.compareSelector(c), f = a(e), h = new b(c, d); if (Object.prototype.hasOwnProperty.call(this.buckets, f)) { for (var f = this.buckets[f], k = 0; k < f.length; k++) if (this.compareSelector(f[k].Key) === e) { this.entryList.Replace(f[k], h); f[k] = h; return } f.push(h) } else this.buckets[f] = [h]; this.count++; this.entryList.AddLast(h) }, Get: function (b) {
-                                b = this.compareSelector(b); var c = a(b); if (Object.prototype.hasOwnProperty.call(this.buckets, c)) for (var c = this.buckets[c], d =
-                                0; d < c.length; d++) { var e = c[d]; if (this.compareSelector(e.Key) === b) return e.Value }
-                            }, Set: function (c, d) { var e = this.compareSelector(c), f = a(e); if (Object.prototype.hasOwnProperty.call(this.buckets, f)) for (var f = this.buckets[f], h = 0; h < f.length; h++) if (this.compareSelector(f[h].Key) === e) return e = new b(c, d), this.entryList.Replace(f[h], e), f[h] = e, !0; return !1 }, Contains: function (b) {
-                                b = this.compareSelector(b); var c = a(b); if (!Object.prototype.hasOwnProperty.call(this.buckets, c)) return !1; for (var c = this.buckets[c], d = 0; d <
-                                c.length; d++) if (this.compareSelector(c[d].Key) === b) return !0; return !1
-                            }, Clear: function () { this.count = 0; this.buckets = {}; this.entryList = new c }, Remove: function (b) { b = this.compareSelector(b); var c = a(b); if (Object.prototype.hasOwnProperty.call(this.buckets, c)) for (var d = this.buckets[c], e = 0; e < d.length; e++) if (this.compareSelector(d[e].Key) === b) { this.entryList.Remove(d[e]); d.splice(e, 1); 0 == d.length && delete this.buckets[c]; this.count--; break } }, Count: function () { return this.count }, ToEnumerable: function () {
-                                var a = this;
-                                return new e(function () { var b; return new h(function () { b = a.entryList.First }, function () { if (null != b) { var a = { Key: b.Key, Value: b.Value }; b = b.Next; return this.Yield(a) } return !1 }, k.Blank) })
-                            }
-                        }; return d
-                    }(), x = function (a) { this.Count = function () { return a.Count() }; this.Get = function (b) { return e.From(a.Get(b)) }; this.Contains = function (b) { return a.Contains(b) }; this.ToEnumerable = function () { return a.ToEnumerable().Select(function (a) { return new w(a.Key, a.Value) }) } }, w = function (a, b) {
-                        this.Key = function () { return a }; this.source =
-                        b
-                    }; w.prototype = new l; return e
+                        function (a) { null == a && (a = 1); return this.Take(this.source.length - a) }; l.prototype.TakeFromLast = function (a) { return this.Skip(this.source.length - a) }; l.prototype.Reverse = function () { var a = this.source; return new e(function () { var b; return new h(function () { b = a.length }, function () { return 0 < b ? this.Yield(a[--b]) : !1 }, k.Blank) }) }; l.prototype.SequenceEqual = function (a, b) { return (a instanceof l || a instanceof Array) && null == b && e.From(a).Count() != this.Count() ? !1 : e.prototype.SequenceEqual.apply(this, arguments) }; l.prototype.ToString =
+                            function (a, b) { if (null != b || !(this.source instanceof Array)) return e.prototype.ToString.apply(this, arguments); null == a && (a = ""); return this.source.join(a) }; l.prototype.GetEnumerator = function () { var a = this.source, b = 0; return new h(k.Blank, function () { return b < a.length ? this.Yield(a[b++]) : !1 }, k.Blank) }; var t = function () {
+                                var a = function (a) { return null === a ? "null" : void 0 === a ? "undefined" : typeof a.toString === q.Function ? a.toString() : Object.prototype.toString.call(a) }, b = function (a, b) {
+                                    this.Key = a; this.Value = b; this.Next =
+                                        this.Prev = null
+                                }, c = function () { this.Last = this.First = null }; c.prototype = { AddLast: function (a) { null != this.Last ? (this.Last.Next = a, a.Prev = this.Last, this.Last = a) : this.First = this.Last = a }, Replace: function (a, b) { null != a.Prev ? (a.Prev.Next = b, b.Prev = a.Prev) : this.First = b; null != a.Next ? (a.Next.Prev = b, b.Next = a.Next) : this.Last = b }, Remove: function (a) { null != a.Prev ? a.Prev.Next = a.Next : this.First = a.Next; null != a.Next ? a.Next.Prev = a.Prev : this.Last = a.Prev } }; var d = function (a) {
+                                    this.count = 0; this.entryList = new c; this.buckets = {}; this.compareSelector =
+                                        null == a ? k.Identity : a
+                                }; d.prototype = {
+                                    Add: function (c, d) { var e = this.compareSelector(c), f = a(e), h = new b(c, d); if (Object.prototype.hasOwnProperty.call(this.buckets, f)) { for (var f = this.buckets[f], k = 0; k < f.length; k++) if (this.compareSelector(f[k].Key) === e) { this.entryList.Replace(f[k], h); f[k] = h; return } f.push(h) } else this.buckets[f] = [h]; this.count++; this.entryList.AddLast(h) }, Get: function (b) {
+                                        b = this.compareSelector(b); var c = a(b); if (Object.prototype.hasOwnProperty.call(this.buckets, c)) for (var c = this.buckets[c], d =
+                                            0; d < c.length; d++) { var e = c[d]; if (this.compareSelector(e.Key) === b) return e.Value }
+                                    }, Set: function (c, d) { var e = this.compareSelector(c), f = a(e); if (Object.prototype.hasOwnProperty.call(this.buckets, f)) for (var f = this.buckets[f], h = 0; h < f.length; h++) if (this.compareSelector(f[h].Key) === e) return e = new b(c, d), this.entryList.Replace(f[h], e), f[h] = e, !0; return !1 }, Contains: function (b) {
+                                        b = this.compareSelector(b); var c = a(b); if (!Object.prototype.hasOwnProperty.call(this.buckets, c)) return !1; for (var c = this.buckets[c], d = 0; d <
+                                            c.length; d++) if (this.compareSelector(c[d].Key) === b) return !0; return !1
+                                    }, Clear: function () { this.count = 0; this.buckets = {}; this.entryList = new c }, Remove: function (b) { b = this.compareSelector(b); var c = a(b); if (Object.prototype.hasOwnProperty.call(this.buckets, c)) for (var d = this.buckets[c], e = 0; e < d.length; e++) if (this.compareSelector(d[e].Key) === b) { this.entryList.Remove(d[e]); d.splice(e, 1); 0 == d.length && delete this.buckets[c]; this.count--; break } }, Count: function () { return this.count }, ToEnumerable: function () {
+                                        var a = this;
+                                        return new e(function () { var b; return new h(function () { b = a.entryList.First }, function () { if (null != b) { var a = { Key: b.Key, Value: b.Value }; b = b.Next; return this.Yield(a) } return !1 }, k.Blank) })
+                                    }
+                                }; return d
+                            }(), x = function (a) { this.Count = function () { return a.Count() }; this.Get = function (b) { return e.From(a.Get(b)) }; this.Contains = function (b) { return a.Contains(b) }; this.ToEnumerable = function () { return a.ToEnumerable().Select(function (a) { return new w(a.Key, a.Value) }) } }, w = function (a, b) {
+                                this.Key = function () { return a }; this.source =
+                                    b
+                            }; w.prototype = new l; return e
                 }();
                 //#endregion
             };
-            var _avgrund = function () {
-                extention.Avgrund = (function () {
+            var _base64 = function () {
 
-                    var container = document.documentElement,
-                        popup = document.querySelector('.avgrund-popup-animate'),
-                        cover = document.querySelector('.avgrund-cover'),
-                        currentState = null;
+                var BASE64_MAPPING = [
+                    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+                    'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+                    'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+                    'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
+                    'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+                    'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+                    'w', 'x', 'y', 'z', '0', '1', '2', '3',
+                    '4', '5', '6', '7', '8', '9', '+', '/'
+                ];
 
-                    container.className = container.className.replace(/\s+$/gi, '') + ' avgrund-ready';
-
-                    // Deactivate on ESC
-                    function onDocumentKeyUp(event) {
-                        if (event.keyCode === 27) {
-                            deactivate();
-                        }
-                    }
-
-                    // Deactivate on click outside
-                    function onDocumentClick(event) {
-                        if (event.target === cover) {
-                            deactivate();
-                        }
-                    }
-
-                    function activate(state) {
-                        //document.addEventListener('keyup', onDocumentKeyUp, false);
-                        //document.addEventListener('click', onDocumentClick, false);
-                        //document.addEventListener('touchstart', onDocumentClick, false);
-
-                        removeClass(popup, currentState);
-                        addClass(popup, 'no-transition');
-                        addClass(popup, state);
-
-                        setTimeout(function () {
-                            removeClass(popup, 'no-transition');
-                            addClass(container, 'avgrund-active');
-                        }, 0);
-
-                        currentState = state;
-                    }
-
-                    function deactivate() {
-                        //document.removeEventListener('keyup', onDocumentKeyUp, false);
-                        //document.removeEventListener('click', onDocumentClick, false);
-                        //document.removeEventListener('touchstart', onDocumentClick, false);
-
-                        removeClass(container, 'avgrund-active');
-                        removeClass(popup, 'avgrund-popup-animate')
-                    }
-
-                    function disableBlur() {
-                        addClass(document.documentElement, 'no-blur');
-                    }
-
-                    function addClass(element, name) {
-                        //if (name == null || name == undefined) return;
-                        element.className = element.className.replace(/\s+$/gi, '') + ' ' + name;
-                    }
-
-                    function removeClass(element, name) {
-                        element.className = element.className.replace(name, '');
-                    }
-
-                    function show(selector) {
-                        popup = document.querySelector(selector);
-                        addClass(popup, 'avgrund-popup-animate');
-                        activate();
-                        return this;
-                    }
-                    function hide() {
-                        deactivate();
-                    }
-
-                    return {
-                        activate: activate,
-                        deactivate: deactivate,
-                        disableBlur: disableBlur,
-                        show: show,
-                        hide: hide
-                    }
-
-                })();
-            };
-            var _cookie = function () {
-                /*!
-                 * jQuery Cookie Plugin v1.4.1
-                 * https://github.com/carhartl/jquery-cookie
-                 *
-                 * Copyright 2006, 2014 Klaus Hartl
-                 * Released under the MIT license
+                /**
+                 *ascii convert to binary
                  */
-                (function (factory) {
-                    factory(extention);
-                }(function (host) {
+                var _toBinary = function (ascii) {
+                    var binary = new Array();
+                    while (ascii > 0) {
+                        var b = ascii % 2;
+                        ascii = Math.floor(ascii / 2);
+                        binary.push(b);
+                    }
+                    binary.reverse();
+                    return binary;
+                };
 
-                    var pluses = /\+/g;
+                /**
+                 *binary convert to decimal
+                 */
+                var _toDecimal = function (binary) {
+                    var dec = 0;
+                    var p = 0;
+                    for (var i = binary.length - 1; i >= 0; --i) {
+                        var b = binary[i];
+                        if (b == 1) {
+                            dec += Math.pow(2, p);
+                        }
+                        ++p;
+                    }
+                    return dec;
+                };
 
-                    function encode(s) {
-                        return config.raw ? s : encodeURIComponent(s);
+                /**
+                 *unicode convert to utf-8
+                 */
+                var _toUTF8Binary = function (c, binaryArray) {
+                    var mustLen = (8 - (c + 1)) + ((c - 1) * 6);
+                    var fatLen = binaryArray.length;
+                    var diff = mustLen - fatLen;
+                    while (--diff >= 0) {
+                        binaryArray.unshift(0);
+                    }
+                    var binary = [];
+                    var _c = c;
+                    while (--_c >= 0) {
+                        binary.push(1);
+                    }
+                    binary.push(0);
+                    var i = 0, len = 8 - (c + 1);
+                    for (; i < len; ++i) {
+                        binary.push(binaryArray[i]);
                     }
 
-                    function decode(s) {
-                        return config.raw ? s : decodeURIComponent(s);
+                    for (var j = 0; j < c - 1; ++j) {
+                        binary.push(1);
+                        binary.push(0);
+                        var sum = 6;
+                        while (--sum >= 0) {
+                            binary.push(binaryArray[i++]);
+                        }
                     }
+                    return binary;
+                };
 
-                    function stringifyCookieValue(value) {
-                        return encode(config.json ? JSON.stringify(value) : String(value));
-                    }
-
-                    function parseCookieValue(s) {
-                        if (s.indexOf('"') === 0) {
-                            // This is a quoted cookie as according to RFC2068, unescape...
-                            s = s.slice(1, -1).replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+                var __BASE64 = {
+                    /**
+                     *BASE64 Encode
+                     */
+                    encoder: function (str) {
+                        var base64_Index = [];
+                        var binaryArray = [];
+                        for (var i = 0, len = str.length; i < len; ++i) {
+                            var unicode = str.charCodeAt(i);
+                            var _tmpBinary = _toBinary(unicode);
+                            if (unicode < 0x80) {
+                                var _tmpdiff = 8 - _tmpBinary.length;
+                                while (--_tmpdiff >= 0) {
+                                    _tmpBinary.unshift(0);
+                                }
+                                binaryArray = binaryArray.concat(_tmpBinary);
+                            } else if (unicode >= 0x80 && unicode <= 0x7FF) {
+                                binaryArray = binaryArray.concat(_toUTF8Binary(2, _tmpBinary));
+                            } else if (unicode >= 0x800 && unicode <= 0xFFFF) {//UTF-8 3byte
+                                binaryArray = binaryArray.concat(_toUTF8Binary(3, _tmpBinary));
+                            } else if (unicode >= 0x10000 && unicode <= 0x1FFFFF) {//UTF-8 4byte
+                                binaryArray = binaryArray.concat(_toUTF8Binary(4, _tmpBinary));
+                            } else if (unicode >= 0x200000 && unicode <= 0x3FFFFFF) {//UTF-8 5byte
+                                binaryArray = binaryArray.concat(_toUTF8Binary(5, _tmpBinary));
+                            } else if (unicode >= 4000000 && unicode <= 0x7FFFFFFF) {//UTF-8 6byte
+                                binaryArray = binaryArray.concat(_toUTF8Binary(6, _tmpBinary));
+                            }
                         }
 
-                        try {
-                            // Replace server-side written pluses with spaces.
-                            // If we can't decode the cookie, ignore it, it's unusable.
-                            // If we can't parse the cookie, ignore it, it's unusable.
-                            s = decodeURIComponent(s.replace(pluses, ' '));
-                            return config.json ? JSON.parse(s) : s;
-                        } catch (e) { }
-                    }
-
-                    function read(s, converter) {
-                        var value = config.raw ? s : parseCookieValue(s);
-                        return $.isFunction(converter) ? converter(value) : value;
-                    }
-
-                    var config = host.cookie = function (key, value, options) {
-
-                        // Write
-
-                        if (arguments.length > 1 && !$.isFunction(value)) {
-                            options = $.extend({}, config.defaults, options);
-
-                            if (typeof options.expires === 'number') {
-                                var days = options.expires, t = options.expires = new Date();
-                                t.setMilliseconds(t.getMilliseconds() + days * 864e+5);
+                        var extra_Zero_Count = 0;
+                        for (var i = 0, len = binaryArray.length; i < len; i += 6) {
+                            var diff = (i + 6) - len;
+                            if (diff == 2) {
+                                extra_Zero_Count = 2;
+                            } else if (diff == 4) {
+                                extra_Zero_Count = 4;
                             }
-
-                            return (document.cookie = [
-                                encode(key), '=', stringifyCookieValue(value),
-                                options.expires ? '; expires=' + options.expires.toUTCString() : '', // use expires attribute, max-age is not supported by IE
-                                options.path ? '; path=' + options.path : '',
-                                options.domain ? '; domain=' + options.domain : '',
-                                options.secure ? '; secure' : ''
-                            ].join(''));
+                            var _tmpExtra_Zero_Count = extra_Zero_Count;
+                            while (--_tmpExtra_Zero_Count >= 0) {
+                                binaryArray.push(0);
+                            }
+                            base64_Index.push(_toDecimal(binaryArray.slice(i, i + 6)));
                         }
 
-                        // Read
+                        var base64 = '';
+                        for (var i = 0, len = base64_Index.length; i < len; ++i) {
+                            base64 += BASE64_MAPPING[base64_Index[i]];
+                        }
 
-                        var result = key ? undefined : {},
-                            // To prevent the for loop in the first place assign an empty array
-                            // in case there are no cookies at all. Also prevents odd result when
-                            // calling $.cookie().
-                            cookies = document.cookie ? document.cookie.split('; ') : [],
-                            i = 0,
-                            l = cookies.length;
-
-                        for (; i < l; i++) {
-                            var parts = cookies[i].split('='),
-                                name = decode(parts.shift()),
-                                cookie = parts.join('=');
-
-                            if (key === name) {
-                                // If second argument (value) is a function it's a converter...
-                                result = read(cookie, value);
-                                break;
-                            }
-
-                            // Prevent storing a cookie that we couldn't decode.
-                            if (!key && (cookie = read(cookie)) !== undefined) {
-                                result[name] = cookie;
+                        for (var i = 0, len = extra_Zero_Count / 2; i < len; ++i) {
+                            base64 += '=';
+                        }
+                        return base64;
+                    },
+                    /**
+                     *BASE64  Decode for UTF-8 
+                     */
+                    decoder: function (_base64Str) {
+                        var _len = _base64Str.length;
+                        var extra_Zero_Count = 0;
+                        /**
+                         *计算在进行BASE64编码的时候，补了几个0
+                         */
+                        if (_base64Str.charAt(_len - 1) == '=') {
+                            if (_base64Str.charAt(_len - 2) == '=') {//两个等号说明补了4个0
+                                extra_Zero_Count = 4;
+                                _base64Str = _base64Str.substring(0, _len - 2);
+                            } else {//一个等号说明补了2个0
+                                extra_Zero_Count = 2;
+                                _base64Str = _base64Str.substring(0, _len - 1);
                             }
                         }
 
-                        return result;
-                    };
+                        var binaryArray = [];
+                        for (var i = 0, len = _base64Str.length; i < len; ++i) {
+                            var c = _base64Str.charAt(i);
+                            for (var j = 0, size = BASE64_MAPPING.length; j < size; ++j) {
+                                if (c == BASE64_MAPPING[j]) {
+                                    var _tmp = _toBinary(j);
+                                    /*不足6位的补0*/
+                                    var _tmpLen = _tmp.length;
+                                    if (6 - _tmpLen > 0) {
+                                        for (var k = 6 - _tmpLen; k > 0; --k) {
+                                            _tmp.unshift(0);
+                                        }
+                                    }
+                                    binaryArray = binaryArray.concat(_tmp);
+                                    break;
+                                }
+                            }
+                        }
 
-                    config.defaults = {};
+                        if (extra_Zero_Count > 0) {
+                            binaryArray = binaryArray.slice(0, binaryArray.length - extra_Zero_Count);
+                        }
 
-                    host.removeCookie = function (key, options) {
-                        // Must not alter options, thus extending a fresh object...
-                        host.cookie(key, '', $.extend({}, options, { expires: -1 }));
-                        return !host.cookie(key);
-                    };
+                        var unicode = [];
+                        var unicodeBinary = [];
+                        for (var i = 0, len = binaryArray.length; i < len;) {
+                            if (binaryArray[i] == 0) {
+                                unicode = unicode.concat(_toDecimal(binaryArray.slice(i, i + 8)));
+                                i += 8;
+                            } else {
+                                var sum = 0;
+                                while (i < len) {
+                                    if (binaryArray[i] == 1) {
+                                        ++sum;
+                                    } else {
+                                        break;
+                                    }
+                                    ++i;
+                                }
+                                unicodeBinary = unicodeBinary.concat(binaryArray.slice(i + 1, i + 8 - sum));
+                                i += 8 - sum;
+                                while (sum > 1) {
+                                    unicodeBinary = unicodeBinary.concat(binaryArray.slice(i + 2, i + 8));
+                                    i += 8;
+                                    --sum;
+                                }
+                                unicode = unicode.concat(_toDecimal(unicodeBinary));
+                                unicodeBinary = [];
+                            }
+                        }
 
-                }));
+                        var str = '';
+                        for (var i = 0, len = unicode.length; i < len; ++i) {
+                            str += String.fromCharCode(unicode[i]);
+                        }
+                        return str;
+                    }
+                };
+
+                win.BASE64 = __BASE64;
+
             };
             return {
                 initMustache: _mustache
                 , initEnumerable: _enumerable
-                , initAvgrund: _avgrund
-                , initCookie: _cookie
+                , initBase64: _base64
             }
         };
-        var _message = (function () {
-            return {
-                ok: function (msg) { $.message(msg, true); }
-                , error: function (msg) { $.message(msg, false); }
-                , alert: function (msg, icon) { $.alert(msg); }
-            }
-        })();
         return {
             init: _init
             , window: win
-            , fn: extention
-            , message: _message
         }
     };
-
-    Banana.G = (function () {
+    core.g = (function () {
         if (window === window.top || window.location.href.toLowerCase() === window.top.location.href.toLowerCase()) {
-            var g = new Banana.Global(window);
+            var g = new Global(window);
             g.init();
-            return g;
+            return {
+                window: g.window
+            };
         } else {
-            if (window.top.Banana) {
-                return window.top.Banana.G;
+            if (window.top.banana) {
+                return window.top.banana.g;
             } else {
                 return null;
             }
         }
-    })();
+    }());
 
-    /***** Banana.Helper *****/
-    Banana.Helper = (function () {
+    //#endregion
+
+    //#region banana.helper
+
+    core.helper = (function () {
         var _log = function (a, b) {
-            if (!Banana.DEBUG) return;
+            if (!DEBUG) return;
             if (window.console) {
-                if (b == null) {
+                if (b == null)
                     window.console.log(new Date().format("yyyy-MM-dd hh:mm:ss") + '>>>', a);
-                } else {
+                else {
                     window.console.log(new Date().format("yyyy-MM-dd hh:mm:ss") + '>>>');
                     window.console.log(a, b);
                 }
             }
         };
-        var _dir = function (o) {
-            if (!Banana.DEBUG) return;
-            if (window && window.console) {
-                window.console.log(new Date().format("yyyy-MM-dd hh:mm:ss") + '>>>');
-                window.console.dir(o);
-            }
-        };
         var _warn = function (a, b) {
-            if (!Banana.DEBUG) return;
+            if (!DEBUG) return;
             if (window.console) {
                 if (b == null)
                     window.console.warn(new Date().format("yyyy-MM-dd hh:mm:ss") + '>>>', a);
@@ -601,7 +630,7 @@
             }
         };
         var _error = function (a, b) {
-            if (!Banana.DEBUG) return;
+            if (!DEBUG) return;
             if (window.console) {
                 if (b == null)
                     window.console.error(new Date().format("yyyy-MM-dd hh:mm:ss") + '>>>', a);
@@ -611,20 +640,20 @@
                 }
             }
         };
-        var _getRandom = function (len) {
+        var _getRandom = function (length) {
             /// <summary>
             /// 获取随机数（默认6位）
             /// </summary>
             /// <param name="len">长度（选填）</param>
             /// <returns type="string"></returns>
-            len = len || 6;
+            length = length || 6;
             var chars = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
-            var str = "";
-            for (var i = 0; i < len ; i++) {
+            var value = '';
+            for (var i = 0; i < length; i++) {
                 var id = Math.ceil(Math.random() * 60);
-                str += chars[id];
+                value += chars[id];
             }
-            return str;
+            return value;
         };
         var _createID = function () {
             /// <summary>
@@ -640,28 +669,63 @@
             /// <returns type="string"></returns>
             return _createID() + _createID() + _createID() + _createID() + _createID() + _createID() + _createID() + _createID();
         };
-        var _getFunction = function (fnName, context) {
+        var _getFunction = function (fn, context) {
             /// <summary>
             /// 获取方法
             /// </summary>
-            /// <param name="fnName">方法名</param>
-            /// <param name="context">上下文对象（选填）</param>
+            /// <param name="fn">方法名或方法体</param>
+            /// <param name="context">方法所在的上下文（选填）</param>
             /// <returns type="function"></returns>
-            if (typeof fnName === 'function') {
-                return fnName;
+            if (typeof fn === 'function') {
+                return fn;
             }
 
             var _context = window;
             if (context) {
-                if (Banana.Helper.isWindow(context) === true) {
+                if (core.helper.isWindow(context) === true) {
                     _context = context;
                 }
             }
 
-            var fn = _context[fnName];
-            if ($.isFunction(fn)) return fn;
-            else return null;
-        }
+            var fn = _context[fn];
+            if ($.isFunction(fn)) { return fn; }
+            else { return null; }
+        };
+        var _invokeFunction = function (fnName) {
+            /// <summary>
+            /// 调用方法（动态参数）
+            /// </summary>
+            /// <param name="fnName">方法名或方法体（可选填为object，格式为：{fnName:'',context:{}}）</param>
+            /// <returns type="object"></returns>            
+            var fn = null;
+            switch (typeof fnName) {
+                case 'string':
+                    fn = _getFunction(fnName, null);
+                    break;
+                case 'object':
+                    if (fnName.fnName && fnName.context) {
+                        fn = _getFunction(fnName.fnName, fnName.context);
+                    }
+                    break;
+                default:
+                    fn = _getFunction(fnName, null);
+                    break;
+            }
+            if (fn != null) {
+                var args = arguments;
+                if (args.length > 1) {
+                    [].shift.call(args);
+                    args = arguments;
+                }
+                return fn.apply(window, (function () {
+                    var params = [];
+                    for (var i in args) {
+                        params.push(args[i]);
+                    }
+                    return params;
+                }()));
+            }
+        };
         var _ajax = function (option) {
             /// <summary>
             /// http请求加载远程数据
@@ -695,9 +759,9 @@
                 , target: null //源对象，一般在执行时将此对象设置为只读
                 , async: true
                 , cache: false
+                , timeout: 180000//超时3分钟
                 , loading: false
                 , crossDomain: false //是否跨域
-                , filterError: false //取消神的拦截
                 //, contentType: 'application/json; charset=utf-8'
                 , dataType: 'json' //text,xml,html,script,json,jsonp
                 //, headers: {
@@ -708,37 +772,35 @@
                 , data: null //form data
                 , beforeSend: function (XMLHttpRequest) {
                     //XMLHttpRequest.setRequestHeader("apikey", "b3761d6f3549c72705142e854edba0c2");
-                    if (this.loading === true) {
-                        B.Helper.loading(true);
-                    }
                 }
-                , onOk: null//请求成功时的回调函数
-                , onError: null//请求失败时的回调函数
-                , onsuccess: null //[推荐]请求成功时的回调函数
-                , onerror: null//[推荐]请求失败时的回调函数
-                , complete: function (XMLHttpRequest, textStatus) {
-                    if (defaults.target != null) {
-                        $(defaults.target).removeAttr("disabled");
+                , onFail: null//请求失败时的回调函数
+                , onSuccess: null //[推荐]请求成功时的回调函数
+                , onComplete: function (status) { }
+                , complete: function (XMLHttpRequest, status) {
+                    if (status == 'timeout') {//超时,status还有success,error等值的情况
+                        //ajaxTimeoutTest.abort();
+                        B.Helper.error("ajax请求超时:", this.url);
                     }
-                    if (this.loading === true) {
-                        B.Helper.loading(false);
-                    }
+
+                    var _oncomplete = Banana.Helper.getFunction(this.onComplete);
+                    if (_oncomplete != null) { _oncomplete(status); }
                 }
                 , success: function (data, textStatus, jqXHR) {
                     //this // 调用本次AJAX请求时传递的options参数
                     //if (Banana.tool.loading) { Banana.tool.loading(false); }
-                    var _onsuccess = Banana.Helper.getFunction(this.onsuccess);
-                    if (_onsuccess == null) {
-                        _onsuccess = Banana.Helper.getFunction(this.onOk);
+                    if (defaults.target != null) {
+                        $(defaults.target).removeProp("disabled");
                     }
+
+                    var _onsuccess = Banana.Helper.getFunction(this.onSuccess);
                     if (_onsuccess != null) { _onsuccess(data); }
                 }
                 , error: function (jqXHR, textStatus, errorThrown) {
                     //if (Banana.tool.loading) { Banana.tool.loading(false); }
-                    var _onerror = Banana.Helper.getFunction(this.onerror);
-                    if (_onerror == null) {
-                        _onerror = Banana.Helper.getFunction(this.onError);
+                    if (defaults.target != null) {
+                        $(defaults.target).removeProp("disabled");
                     }
+                    var _onerror = Banana.Helper.getFunction(this.onFail);
                     if (_onerror != null) { _onerror(jqXHR); }
                 }
                 , statusCode: {
@@ -746,7 +808,7 @@
                         alert('404:没有找到页面');
                     }
                     , 500: function () {
-                        alert('500:服务器内部错误');
+                        //alert('500:服务器内部错误');
                     }
                 }
             };
@@ -772,92 +834,45 @@
             //    if (Banana.tool.loading) { Banana.tool.loading(true); }
             //}
             if (settings.target != null) {
-                $(settings.target).attr("disabled", "disabled");
+                $(settings.target).prop("disabled", "disabled");
             }
             $.ajax(settings);
         };
-        var _addStorage = function (key, value) {
-            /// <summary>
-            /// 添加storage
-            /// </summary>
-            /// <param name="key">键</param>
-            /// <param name="value">值</param>
-            if (!window.localStorage) {
-                Banana.Helper.warn('你的浏览器不支持storage');
-                return;
+        var _storage = function (callback, type) {
+            //storage usage
+            //setItem,removeItem,getItem
+            type = (type || 1) + ''; //1-localStorage 2-sessionStorage
+            switch (type.toLowerCase()) {
+                case '1':
+                case 'local':
+                case 'localstorage':
+                    if (!window.localStorage) {
+                        core.helper.warn('你的浏览器不支持localStorage');
+                        core.helper.invokeFunction(callback, null);
+                        return;
+                    }
+                    core.helper.invokeFunction(callback, window.localStorage);
+                    break;
+                case '2':
+                case 'session':
+                case 'sessionstorage':
+                    if (!window.sessionStorage) {
+                        core.helper.warn('你的浏览器不支持sessionStorage');
+                        core.helper.invokeFunction(callback, null);
+                        return;
+                    }
+                    core.helper.invokeFunction(callback, window.sessionStorage);
+                    break;
+                default:
+                    core.helper.warn('无效的参数:type');
+                    break;
             }
-            window.localStorage.setItem(key, value);
-        };
-        var _getStorage = function (key) {
-            /// <summary>
-            /// 获取storage值
-            /// </summary>
-            /// <param name="key">键</param>
-            /// <returns type="object"></returns>
-            if (!window.localStorage) {
-                Banana.Helper.warn('你的浏览器不支持storage');
-                return null;
-            }
-            return window.localStorage.getItem(key);
-        };
-        var _removeStorage = function (key) {
-            /// <summary>
-            /// 移除storage值
-            /// </summary>
-            /// <param name="key">键</param>
-            if (!window.localStorage) {
-                Banana.Helper.warn('你的浏览器不支持storage');
-                return;
-            }
-            window.localStorage.removeItem(key);
-        };
-        var _getSessionStorage = function (key) {
-            /// <summary>
-            /// 获取storage值
-            /// </summary>
-            /// <param name="key">键</param>
-            /// <returns type="object"></returns>
-            if (!window.sessionStorage) {
-                Banana.Helper.warn('你的浏览器不支持storage');
-                return null;
-            }
-            return window.sessionStorage.getItem(key);
-        };
-        var _addSessionStorage = function (key, value) {
-            /// <summary>
-            /// 添加storage
-            /// </summary>
-            /// <param name="key">键</param>
-            /// <param name="value">值</param>
-            if (!window.sessionStorage) {
-                Banana.Helper.warn('你的浏览器不支持storage');
-                return;
-            }
-            window.sessionStorage.setItem(key, value);
-        };
-        var _removeSessionStorage = function (key) {
-            /// <summary>
-            /// 移除storage值
-            /// </summary>
-            /// <param name="key">键</param>
-            if (!window.sessionStorage) {
-                Banana.Helper.warn('你的浏览器不支持storage');
-                return;
-            }
-            window.sessionStorage.removeItem(key);
-        };
-        var _setTitle = function (title) {
-            /// <summary>
-            /// 设置顶层视窗的标题
-            /// </summary>
-            /// <param name="title">标题</param>
-            Banana.G.window.document.title = title;
         };
         var _htmlDecode = function (str) {
-            if (!str || str.length == 0) return '';
+            if (!str || str.length === 0) { return ''; }
             return str.replace(/&gt;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&nbsp;/g, " ").replace(/&#39;/g, "\'").replace(/&quot;/g, "\"").replace(/<br>/g, "\n");
         };
-        var _getStrCombination = function (str) {
+        var _getCombination = function (str) {
             /// <summary>
             /// 获取字符串组合
             /// </summary>
@@ -895,47 +910,26 @@
             }
 
             return {
-                byteLength: length
-                , length: str.length
-                , chineseLength: chineseCount
-                , englishLength: englishCount
-                , symbolLength: symboCount
+                byteLength: length //字节总长度
+                , length: str.length //字符串总长度
+                , cn: chineseCount//中文长度
+                , en: englishCount//英文长度
+                , symbol: symboCount//符号长度
             };
         };
-        var _getByteLength = function (str, callback) {
-            /// <summary>
-            /// 获取字节长度
-            /// </summary>
-            /// <param name="str">字符串</param>
-            /// <returns type="int"></returns>
-            var length = 0;
-            if (!str) return length;
-            for (var i = 0; i < str.length; i++) {
-                var c = str.charAt(i);
-                if (/^[\u0000-\u00ff]$/.test(c)) {
-                    length += 1;
-                }
-                else {
-                    length += 2;
-                }
-            }
-
-            var _callback = _getFunction(callback);
-            if (_callback != null) {
-                _callback(_getStrCombination(str));
-            }
-
-            return length;
-        };
-        var _replaceEnter = function (str, newWrap, oldWrap) {
+        var _replaceEnter = function (str, oldWrap, newWrap) {
             /// <summary>
             /// 替换回车换行符
             /// </summary>
             /// <param name="str">要替换的字符串</param>
-            /// <param name="newWrap">新字符串</param>
             /// <param name="oldWrap">老字符串</param>
+            /// <param name="newWrap">新字符串</param>
             /// <returns type="string"></returns>
-            var _ow = oldWrap || '\r\n', _nw = newWrap || '<br />';
+            var _ow = '\r\n', _nw = '<br />';
+            if (arguments.length >= 3) {
+                _ow = oldWrap;
+                _nw = newWrap;
+            }
             return str.replace(new RegExp(_ow, "g"), _nw);
         };
         var _getMustache = function (fn) {
@@ -944,39 +938,44 @@
             /// </summary>
             /// <param name="fn">执行函数（可选）</param>
             /// <returns type="">Mustache</returns>
-            if (!Banana.G.window.Mustache) {
-                Banana.Helper.warn('mustache not loaded');
+            if (!core.g.window.Mustache) {
+                core.helper.error('未找到对象:Mustache');
                 return;
             }
-            if (!fn || typeof fn !== 'function') {
-                return Banana.G.window.Mustache;
+            fn = core.helper.getFunction(fn);
+            if (!fn) {
+                return core.g.window.Mustache;
             } else {
-                fn.call(window, Banana.G.window.Mustache);
+                //fn.call(window, core.g.window.Mustache);
+                core.helper.invokeFunction(fn, core.g.window.Mustache);
             }
         };
-        var _mustacheRender = function (options) {
+        var _mustacheRender = function (options, fn) {
             /// <summary>
             /// 快速解析模板
             /// </summary>
             /// <param name="options"></param>
             if (!options.container) {
-                Banana.Helper.error('container is undefined in option');
+                core.helper.error('container is undefined in option');
                 return;
             }
             if (!options.template) {
-                Banana.Helper.error('template is undefined in option');
+                core.helper.error('template is undefined in option');
                 return;
             }
             if (!options.view) {
-                Banana.Helper.error('view is undefined in option');
+                core.helper.error('view is undefined in option');
                 return;
             }
-            Banana.Helper.getMustache(function (Mustache) {
+            core.helper.getMustache(function (mustache) {
                 var defaults = {
-                    container: null
-                    , template: ''
-                    , view: null
+                    container: null//容器
+                    , template: ''//模板，可以是选择器，可以是字符串内容
+                    , view: null//array数据
                     , partials: null
+                    , replace: true//是否替换容器内容
+                    , prepend: false //是否往前追加
+                    , callback: null //function () { } //渲染完成后的回调函数
                 };
                 options = $.extend(defaults, options);
 
@@ -988,10 +987,28 @@
                     }
                 }
 
-                Mustache.parse(options.template);
-                var content = Mustache.render(options.template, options.view, options.partials);
-                if (!(options.container instanceof $)) { options.container = $(options.container); }
-                options.container.html(content);
+                mustache.parse(options.template);
+                var content = mustache.render(options.template, options.view, options.partials);
+                if (!(options.container instanceof $)) {
+                    options.container = $(options.container);
+                }
+                if (options.replace == true) {
+                    options.container.html(content);
+                } else {
+                    if (options.prepend) {
+                        options.container.prepend(content)
+                    } else {
+                        options.container.append(content);
+                    }
+                }
+
+                if (core.helper.getType(options.callback) === 'function') {
+                    options.callback({
+                        content: content
+                        , container: options.container
+                        , mustache: mustache
+                    });
+                }
             });
         };
         var _getEnumerable = function (fn) {
@@ -1000,14 +1017,16 @@
             /// </summary>
             /// <param name="fn">执行函数（可选）</param>
             /// <returns type="">Enumerable</returns>
-            if (!Banana.G.window.Enumerable) {
-                Banana.Helper.warn('enumerable not loaded');
+            if (!core.g.window.Enumerable) {
+                core.helper.warn('未找到对象:Enumerable');
                 return;
             }
-            if (!fn || typeof fn !== 'function') {
-                return Banana.G.window.Enumerable;
+            fn = core.helper.getFunction(fn);
+            if (!fn) {
+                return core.g.window.Enumerable;
             } else {
-                fn.call(window, Banana.G.window.Enumerable);
+                //fn.call(window, core.g.window.Enumerable);
+                core.helper.invokeFunction(fn, core.g.window.Enumerable);
             }
         };
         var _isWindow = function (win) {
@@ -1025,252 +1044,455 @@
             head.removeChild(js);
             return window[expando] === win[expando];
         };
-        var _validateUrl = function (url) {
-            var strRegex = "^((https|http|ftp|rtsp|mms)://)?[a-z0-9A-Z]{3}\.[a-z0-9A-Z][a-z0-9A-Z]{0,61}?[a-z0-9A-Z]\.com|net|cn|cc (:s[0-9]{1-4})?/$";
-            if (new RegExp(strRegex).test(url)) {
-                return true;
-            } else {
-                return false;
-            }
-        };
-        var _loading = function (hide) {
-            if (hide != null && hide == false) {
-                $(".busy", $(B.G.window.document)).remove();
-            } else {
-                $("<div class='busy'><div style='position: absolute;left: 50%;top: 50%;'><img src='/Plugin/busy/indicator_medium.gif' /></div></busy>").appendTo($(B.G.window.document).find('body'));
-            }
-        };
-        var _isNullOrUndefined = function (target) {
+        var _dateDiff = function (startTime, endTime, diffType) {
             /// <summary>
-            /// 指示对象是 null、还是undefined
+            /// 计算时间差
+            /// </summary>
+            /// <param name="startTime">开始时间</param>
+            /// <param name="endTime">结束时间</param>
+            /// <param name="diffType">差值类型 S/M/H/D</param>
+            /// <returns type=""></returns>
+            var divNum = 1;
+            switch (diffType) {
+                case "S":
+                    divNum = 1000; break;
+                case "M":
+                    divNum = 1000 * 60; break;
+                case "H":
+                    divNum = 1000 * 3600; break;
+                case "D":
+                    divNum = 1000 * 3600 * 24; break;
+                default: break;
+            }
+            return parseInt((startTime.getTime() - endTime.getTime()) / parseInt(divNum));
+        };
+        var _removeScript = function (html) {
+            var div = document.createElement('div');
+            div.innerHTML = html;
+            var scripts = div.getElementsByTagName('script');
+            var i = scripts.length;
+            while (i--) {
+                scripts[i].parentNode.removeChild(scripts[i]);
+            }
+            var handledHtml = div.innerHTML;
+            handledHtml = handledHtml.replace(/script>/gi, "").replace(/script&gt;/gi, "");
+            return handledHtml;
+        };
+        var _isNull = function (target) {
+            /// <summary>
+            /// 指示对象是否是 null、undefined
             /// </summary>
             var t = typeof target;
-            if ((target == null && t == 'object') || (target == undefined && t == 'undefined')) {
+            if ((target === null && t === 'object') || (target === undefined && t === 'undefined')) {
                 return true;
             }
             return false;
         };
-        var _signalr = (function () {
-            var _init = function (options) {
-                var config = {
-                    url: ''
-                    , qs: null
-                    , hub: 'myHub'
-                    , logging: false
-                    , onsuccess: function (e) { }
-                    , onerror: function (e) {
-                        //console.error('连接失败:' + e);
-                    }
-                    , clientHandle: function (e) { }
-                    , stateChanged: function (state) {
-                        B.Helper.log('状态改变', state);
-                    }
-                };
-                $.extend(config, options);
-                $.connection.hub.url = config.url;
-                $.connection.hub.qs = config.qs;
-                $.connection.hub.logging = config.logging;
-                var _hub = $.connection[config.hub];
-
-                if (!_hub || !_hub.client) {
-                    B.Helper.error('消息服务器未启动');
-                    return;
-                }
-
-                $.connection.hub.stateChanged(function (state) {
-                    _invokeFunction(config.stateChanged, state);
-                });
-
-                for (var name in config.clientEvents) {
-                    _hub.client[name] = config.clientEvents[name];
-                }
-
-                //console.log('connectionState', $.connection.connectionState);
-
-                config.clientHandle({
-                    client: _hub.client
-                    , hub: _hub
-                    , connection: _hub.connection
-                    , hubName: _hub.hubName
-                    , connectionState: {
-                        connecting: 0,
-                        connected: 1,
-                        reconnecting: 2,
-                        disconnected: 4
-                    }
-                });
-
-                $.connection.hub.starting(function () {
-                    B.Helper.log('请求连接');
-                }).start({
-                    waitForPageLoad: true
-                   , callback: function () {
-                       B.Helper.log('连接成功');
-                   }
-                }).fail(function (error) {
-                    config.onerror(error.message);
-                    B.Helper.log('连接失败');
-                }).done(function (chat) {
-                    config.onsuccess({
-                        server: _hub.server
-                        , connection: _hub.connection
-                        , hub: _hub
-                        , chat: chat
-                        , connectionState: {
-                            connecting: 0,
-                            connected: 1,
-                            reconnecting: 2,
-                            disconnected: 4
-                        }
-                    });
-                }).always(function (chat) {
-                    B.Helper.log('连接完成 always', chat);
-                });
-            };
-            return {
-                init: _init
-            }
-        })();
-        var _invokeFunction = function (fnName) {
+        var _encoder = function (str) {
             /// <summary>
-            /// 调用方法（动态参数）
+            /// base64转码
             /// </summary>
-            /// <param name="fnName">方法名或方法体（可选填为object，格式为：{fnName:'',context:{}}）</param>
-            /// <returns type="object"></returns>       
-            if (fnName == null) return;
-
-            var fn = null;
-            switch (typeof fnName) {
-                case 'string':
-                    fn = _getFunction(fnName, null);
-                    break;
-                case 'object':
-                    if (fnName.fnName && fnName.context) {
-                        fn = _getFunction(fnName.fnName, fnName.context);
-                    }
-                    break;
-                default:
-                    fn = _getFunction(fnName, null);
-                    break;
-            }
-            if (fn != null) {
-                var args = arguments;
-                if (args.length > 1) {
-                    [].shift.call(args);
-                    args = arguments;
-                }
-                return fn.apply(window, (function () {
-                    var params = [];
-                    for (var i in args) {
-                        params.push(args[i]);
-                    }
-                    return params;
-                }()));
-            }
+            /// <param name="str" type="type"></param>
+            /// <returns type=""></returns>
+            return core.g.window.BASE64.encoder(str);
         };
-        var _addCookie = function (key, value, options) {
+        var _decoder = function (str) {
+            /// <summary>
+            /// base64解码
+            /// </summary>
+            /// <param name="str" type="type"></param>
+            /// <returns type=""></returns>
+            return core.g.window.BASE64.decoder(str);
+        };
+        var _dateFormat = function (date, opt) {
+            /// <summary>
+            /// 时间格式化
+            /// </summary>
+            /// <param name="date" type="type">date</param>
+            /// <param name="opt" type="type">暂未扩展</param>
+            /// <returns type=""></returns>
+            var option = {
+                customFormat: false
+                , resultFormat: function (d) {
+                    core.helper.log(d);
+                    return '自定义时间格式';
+                }
+            };
+            $.extend(option, opt);
+
+            var timestamp;
+            if (typeof date === 'object' && date.constructor === Date) {
+                timestamp = (+date);
+            } else {
+                if (isNaN(parseInt(date))) {
+                    timestamp = Date.parse(date.replace(/-/g, "/"));
+                } else {
+                    timestamp = parseInt(date);
+                }
+            }
+
+            var diff;
+            var now = new Date();
+            var date = new Date(timestamp);
+
+            var y_diff = date.dateDiff('y', now);
+            var m_diff = date.dateDiff('m', now);
+            var d_diff = date.dateDiff('d', now);
+            var h_diff = date.dateDiff('h', now);
+            var n_diff = date.dateDiff('n', now);
+            var s_diff = date.dateDiff('s', now);
+
+            if (option.customFormat == true) {
+                return option.resultFormat({
+                    year: y_diff
+                    , month: m_diff
+                    , day: d_diff
+                    , hour: h_diff
+                    , minute: n_diff
+                    , second: s_diff
+                });
+            }
+            if (y_diff > 0 || m_diff > 0 || d_diff > 0) {
+                return date.format('yyyy-MM-dd');
+            }
+            if (h_diff > 0) {
+                return h_diff + '小时前';
+            }
+            if (n_diff > 0) {
+                return n_diff + '分钟前';
+            }
+            return '刚刚';
+        };
+        var _queryString = function (name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) { return decodeURI(r[2]); }
+            else { return null; }
+        };
+        var _getJSON = function (url, data) {
+            //get json data sync
+            var res = null;
+            var opt = {
+                url: url
+                , async: false
+                , onSuccess: function (d) {
+                    res = d;
+                }
+            };
+            if (data) {
+                opt.data = data;
+            }
+
+            _ajax(opt);
+            return res;
+        };
+        var _addCookie = function (key, value, expireTime, expireType) {
             /// <summary>
             /// 添加cookie
             /// </summary>
             /// <param name="key" type="type"></param>
             /// <param name="value" type="type"></param>
-            return B.Helper.invokeFunction(B.G.fn.cookie, key, value, options);
+            /// <param name="expireTime" type="type"></param>
+            /// <param name="expireType" type="type">y/M/d/h/m/s</param>
+            try {
+                expireType = !expireType ? 'm' : expireType;
+                expireTime = !expireTime ? 30 : expireTime;
+
+                var ts;
+                switch (expireType) {
+                    case 'y':
+                        ts = expireTime * 365 * 24 * 60 * 60;
+                        break;
+                    case 'M':
+                        ts = expireTime * 30 * 24 * 60 * 60;
+                        break;
+                    case 'd':
+                        ts = expireTime * 24 * 60 * 60;
+                        break;
+                    case 'h':
+                        ts = expireTime * 60 * 60;
+                        break;
+                    case 'm':
+                        ts = expireTime * 60;
+                        break;
+                    case 's':
+                        ts = expireTime;
+                        break;
+                    case 'ms':
+                        ts = expireTime / 1000;
+                        break;
+                    default:
+                        ts = 30 * 60;//default 30 minitues
+                        break;
+                }
+
+                var exp = new Date();
+                exp.setTime(exp.getTime() + ts * 1000);
+                document.cookie = key + "=" + escape(value) + ";expires=" + exp.toGMTString();
+                return true;
+            } catch (e) {
+                throw ('add cookie error:' + e);
+                return false;
+            }
         };
         var _getCookie = function (key) {
-            /// <summary>
-            /// 获取cookie
-            /// </summary>
-            /// <param name="key" type="type"></param>
-            if (arguments.length > 1) {
-                return B.Helper.invokeFunction(B.G.fn.cookie, key, arguments[1]);
-            }
-            return B.Helper.invokeFunction(B.G.fn.cookie, key);
+            var arr, reg = new RegExp("(^| )" + key + "=([^;]*)(;|$)");
+            if (arr = document.cookie.match(reg))
+                return unescape(arr[2]);
+            else
+                return null;
         };
         var _removeCookie = function (key) {
+            var exp = new Date();
+            exp.setTime(exp.getTime() - 1);
+            var value = _getCookie(key);
+            if (value != null)
+                document.cookie = key + "=" + value + ";expires=" + exp.toGMTString();
+        };
+        var _clone = function (obj) {
             /// <summary>
-            /// 移除cookie
+            /// clone obj
             /// </summary>
-            /// <param name="key" type="type"></param>
-            return B.Helper.invokeFunction(B.G.fn.removeCookie, key);
+            /// <param name="obj" type="type"></param>
+            /// <returns type=""></returns>
+            var o;
+            if (typeof obj === "object") {
+                if (obj === null) {
+                    o = null;
+                } else {
+                    if (obj instanceof Array) {
+                        o = [];
+                        for (var i = 0, len = obj.length; i < len; i++) {
+                            o.push(core.helper.clone(obj[i]));
+                        }
+                    } else {
+                        o = {};
+                        for (var k in obj) {
+                            o[k] = core.helper.clone(obj[k]);
+                        }
+                    }
+                }
+            } else {
+                o = obj;
+            }
+            return o;
+        };
+        var _getType = function (o) {
+            var s = Object.prototype.toString.call(o);
+            s = s.split(' ')[1];
+            return s.substring(0, s.length - 1).toLowerCase();
+        };
+        var _toDate = function (str, format) {
+            /// <summary>
+            /// 转换为时间类型
+            /// </summary>
+            /// <param name="str" type="type"></param>
+            /// <param name="format" type="type">时间格式化字符串，如：yyyy-MM-dd HH:mm:ss</param>
+            /// <returns type="">format为空时返回值为Date类型，否则返回string</returns>
+            try {
+                var date = new Date(parseInt(str.replace('/Date(', '').replace(')/', ''), 10));
+                if (arguments.length == 1) {
+                    return date;
+                }
+
+                //format = format || 'yyyy-MM-dd HH:mm:ss';
+                //var d = new Date(parseInt(str.substr(6, 13)));
+                return date.format(format);
+            }
+            catch (error) {
+                core.helpre.error(error);
+                return null;
+            }
+        };
+        var _decToHex = function (str) {
+            /// <summary>
+            /// 字符转unicode
+            /// </summary>
+            /// <param name="str" type="type"></param>
+            /// <returns type=""></returns>
+            var res = [];
+            for (var i = 0; i < str.length; i++)
+                res[i] = ("00" + str.charCodeAt(i).toString(16)).slice(-4);
+            return "\\u" + res.join("\\u");
+        };
+        var _hexToDec = function (str) {
+            /// <summary>
+            /// unicode转字符
+            /// </summary>
+            /// <param name="str" type="type"></param>
+            /// <returns type=""></returns>
+            str = str.replace(/\\/g, "%");
+            return unescape(str);
+        };
+        var _getHash = function (str) {
+            /// <summary>
+            /// 获取字符串hash
+            /// </summary>
+
+            var I64BIT_TABLE =
+                'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-'.split('');
+
+            var hash = 5381;
+            var i = str.length - 1;
+
+            if (typeof str == 'string') {
+                for (; i > -1; i--)
+                    hash += (hash << 5) + str.charCodeAt(i);
+            }
+            else {
+                for (; i > -1; i--)
+                    hash += (hash << 5) + str[i];
+            }
+            var value = hash & 0x7FFFFFFF;
+
+            var retValue = '';
+            do {
+                retValue += I64BIT_TABLE[value & 0x3F];
+            }
+            while (value >>= 6);
+
+            return retValue;
+        };
+        var _getFile = function (url, data) {
+            /// <summary>
+            /// 下载文件
+            /// </summary>
+            /// <param name="url" type="type"></param>
+            /// <param name="data" type="type"></param>
+            var $form = $('<form>');
+            $form.attr({
+                'style': 'display:none;'
+                , 'target': ''
+                , 'method': 'post'
+                , 'action': url
+            });
+            $('body').append($form);
+            var o = {};
+            if (core.helper.getType(data) === 'function') {
+                o = data();
+            }
+            else {
+                o = data;
+            }
+            if (core.helper.getType(o) === 'object') {
+                for (var k in o) {
+                    $form.append($('<input>').attr({
+                        type: 'hidden'
+                        , name: k
+                        , value: o[k]
+                    }));
+                }
+            }
+            if (core.helper.getType($().ajaxSubmit) === 'function') {
+                $($form).ajaxSubmit({
+                    success: function (res) {
+                        if (res.success) {
+                            $form.attr({
+                                action: '/base/getfile/'
+                            }).append($('<input>').attr({
+                                type: 'hidden'
+                                , name: 'key'
+                                , value: res.key
+                            })).submit();
+                            setTimeout(function () {
+                                $form.remove();
+                            }, 5000);
+                        } else {
+                            core.controls.alert(res.message);
+                        }
+                    }
+                });
+            }
+            else {
+                core.helper.error('getFile方法依赖jquery.form.js');
+            }
+        };
+        var _shortText = function (str, length) {
+            length = length || 10;
+            if (str.length > length) {
+                return str.substring(0, length) + '...';
+            } else {
+                return str;
+            }
         };
         return {
             log: _log
-            , dir: _dir
             , warn: _warn
             , error: _error
             , getRandom: _getRandom
             , createID: _createID
             , createGUID: _createGUID
             , getFunction: _getFunction
+            , invokeFunction: _invokeFunction
             , ajax: _ajax
-            , addStorage: _addStorage
-            , getStorage: _getStorage
-            , removeStorage: _removeStorage
-            , addSessionStorage: _addSessionStorage
-            , getSessionStorage: _getSessionStorage
-            , removeSessionStorage: _removeSessionStorage
-            , setTitle: _setTitle
             , htmlDecode: _htmlDecode
-            , getByteLength: _getByteLength
-            , getStrCombination: _getStrCombination
+            , getCombination: _getCombination
             , replaceEnter: _replaceEnter
             , getMustache: _getMustache
             , mustacheRender: _mustacheRender
             , getEnumerable: _getEnumerable
+            , getLinq: _getEnumerable //alias of getEnumerable
             , isWindow: _isWindow
-            , validateUrl: _validateUrl
-            , loading: _loading
-            , isNullOrUndefined: _isNullOrUndefined
-            , signalr: _signalr
-            , invokeFunction: _invokeFunction
+            , dateDiff: _dateDiff
+            , removeScript: _removeScript
+            , isNull: _isNull
+            , encoder: _encoder
+            , decoder: _decoder
+            , dateFormat: _dateFormat
+            , queryString: _queryString
+            , getJSON: _getJSON
             , addCookie: _addCookie
             , getCookie: _getCookie
             , removeCookie: _removeCookie
+            , clone: _clone
+            , getType: _getType
+            , toDate: _toDate
+            , toHex: _decToHex
+            , toDec: _hexToDec
+            , getHash: _getHash
+            , getFile: _getFile
+            , shortText: _shortText
+            , storage: _storage
         };
     })();
 
-    /***** Banana.Space *****/
-    Banana.Space = function (win) {
-        var root = this;
-        var win = win || window;
-        var inited = false;
-        //系统空间ID
-        win.spaceId = Banana.Helper.createGUID();
-        var _init = function () {
-            if (inited) return;
-            _extention();
-            Banana.Helper.log('init space');
-            (function () {
-                //#region 系统版本的判断
-                var serverVer = Banana.Helper.getStorage(Banana.Constant.KEY_SYSVER);
-                if (serverVer != null) {
-                    if (win.__banana) {
-                        var currentVer = win.__banana.sysver;
-                        if (serverVer != currentVer) {
-                            Banana.Helper.removeStorage(Banana.Constant.KEY_SYSVER);
-                        }
-                    }
-                }
-                //#endregion
+    //#endregion
 
+    var Space = function (win) {
+        var root = this;
+        var spaceId = core.helper.encoder(win.location.href); //core.helper.createGUID();
+        var _init = function () {
+
+            var deviceAgent = navigator.userAgent.toLowerCase();
+            var agent = (deviceAgent.match(/(iphone|ipod|ipad)/) ||
+                deviceAgent.match(/iphone/i) ||
+                deviceAgent.match(/ipad/i) ||
+                deviceAgent.match(/ipod/i));
+            this.device = {
+                ios: (agent != null && agent.length > 0)
+            };
+
+            //win.onerror = _onerror;
+            _extention();
+            core.helper.log('init space');
+            (function () {
                 //事件订阅
                 var o = $(win);
-                Banana.subscribe = function () {
+                core.subscribe = function () {
                     o.on.apply(o, arguments);
                 };
-                Banana.unsubscribe = function () {
+                core.unsubscribe = function () {
                     o.off.apply(o, arguments);
                 };
-                Banana.publish = function () {
+                core.publish = function () {
                     o.trigger.apply(o, arguments);
                 };
-
             })();
-            $(win.document.body).on('click', '*[' + Banana.Constant.COMMAND_KEY + ']', function (e) {
-                var cmdtrigger = Banana.Helper.getFunction(Banana.Constant.FUNCTION_COMMAND_TRIGGER);
+            $(win.document).on('click', '*[' + core.constant.COMMAND_KEY + ']', function (e) {
+                var cmdtrigger = core.helper.getFunction(core.constant.FUNCTION_COMMAND_TRIGGER);
                 if (cmdtrigger != null) {
                     var $target = $(this);
-                    var _args = $target.attr(Banana.Constant.COMMAND_ARGS);
+                    var _args = $target.attr(core.constant.COMMAND_ARGS);
                     if (_args != null && _args != '') {
                         try {
                             if (_args.substr(0, 1) === '{') {
@@ -1278,11 +1500,11 @@
                             }
                         } catch (err) { }
                     }
-                    cmdtrigger.call(win, { target: $target, cmd: $target.attr(Banana.Constant.COMMAND_KEY), args: _args });
+                    cmdtrigger.call(win, { target: $target, cmd: $target.attr(core.constant.COMMAND_KEY), args: _args });
                 }
             });
             var handler = function () {
-                var startup = Banana.Helper.getFunction(Banana.Constant.FUNCTION_STARTUP, win);
+                var startup = core.helper.getFunction(core.constant.FUNCTION_STARTUP, win);
                 if (null != startup) {
                     startup.call(win, { window: win });
                     return true;
@@ -1306,9 +1528,7 @@
                 };
                 recursive();
             }
-            inited = !inited;
-            Banana.Helper.log('end init space');
-            Banana.Helper.log(B.info);
+            core.helper.log('end init space');
         };
         var _extention = function () {
             /// <summary>
@@ -1316,18 +1536,7 @@
             /// </summary>
 
             //#region object
-
-            //Object.prototype.isNullOrUndefined = function () {
-            //    /// <summary>
-            //    /// 指示对象是 null、还是undefined
-            //    /// </summary>
-            //    var t = typeof this;
-            //    if ((this == null && t == 'object') || (this == undefined && t == 'undefined')) {
-            //        return true;
-            //    }
-            //    return false;
-            //};
-
+            //object对象不可随便扩展方法，系统其他地方可能会遍历object对象属性（包含jquery的each），此时会造成错误：matchExpr[type].exec is not a function
             //#endregion
 
             //#region string
@@ -1458,7 +1667,7 @@
                         length = 2;
                     }
                     value = new String(value);
-                    for (var i = 0, zeros = ''; i < (length - value.length) ; i++) {
+                    for (var i = 0, zeros = ''; i < (length - value.length); i++) {
                         zeros += '0';
                     }
                     return zeros + value;
@@ -1491,10 +1700,25 @@
                 });
             }
 
+            Date.prototype.dateDiff = function (interval, objDate2) {
+                var d = this, i = {}, t = d.getTime(), t2 = objDate2.getTime();
+                i['y'] = objDate2.getFullYear() - d.getFullYear();
+                i['q'] = i['y'] * 4 + Math.floor(objDate2.getMonth() / 4) - Math.floor(d.getMonth() / 4);
+                i['m'] = i['y'] * 12 + objDate2.getMonth() - d.getMonth();
+                i['ms'] = objDate2.getTime() - d.getTime();
+                i['w'] = Math.floor((t2 + 345600000) / (604800000)) - Math.floor((t + 345600000) / (604800000));
+                i['d'] = Math.floor(t2 / 86400000) - Math.floor(t / 86400000);
+                i['h'] = Math.floor(t2 / 3600000) - Math.floor(t / 3600000);
+                i['n'] = Math.floor(t2 / 60000) - Math.floor(t / 60000);
+                i['s'] = Math.floor(t2 / 1000) - Math.floor(t / 1000);
+                return i[interval];
+            }
+
             //#endregion
 
             //#region array
-            Array.prototype.mustacheExtend = function (funcArrs) {
+
+            Array.prototype.extend = function (funcArrs) {
                 for (var i = 0; i < this.length; i++) {
                     var item = this[i];
                     for (var func in funcArrs) {
@@ -1504,581 +1728,376 @@
                     }
                 }
             }
+
             //#endregion
 
-            //#region Math
+            //#region jquery
 
-            Math.add = function (p1, p2) {
-                /// <summary>
-                /// 加法（不固定参数）
-                /// </summary>
-                /// <returns type="Number"></returns>
-                var args = arguments;
-                var inner = function (a, b) {
-                    var r1, r2, m;
-                    try { r1 = a.toString().split(".")[1].length; } catch (e) { r1 = 0; }
-                    try { r2 = b.toString().split(".")[1].length; } catch (e) { r2 = 0; }
-                    m = Math.pow(10, Math.max(r1, r2));
-                    return (a * m + b * m) / m;
-                };
-                var temp = 0;
-                for (var i in args) {
-                    temp = inner(temp, args[i]);
-                }
-                return temp;
-            };
-            Math.sub = function (p1, p2) {
-                /// <summary>
-                /// 减法（不固定参数）
-                /// </summary>
-                /// <returns type="Number"></returns>
-                var args = arguments;
-                var inner = function (a, b) {
-                    var r1, r2, m;
-                    try { r1 = a.toString().split(".")[1].length; } catch (e) { r1 = 0; }
-                    try { r2 = b.toString().split(".")[1].length; } catch (e) { r2 = 0; }
-                    m = Math.pow(10, Math.max(r1, r2));
-                    return (a * m + b * m) / m;
-                };
-                var temp = 0;
-                for (var i in args) {
-                    if (i == 0) {
-                        temp = inner(args[i], temp);
+            var placeholderSupport = 'placeholder' in document.createElement('input');
+            $.fn.serializeObject = function () {
+
+                var o = {};
+                var eleForm = this;
+                var a = this.serializeArray();
+                $.each(a, function () {
+                    if (o[this.name] !== undefined) {
+                        if (!o[this.name].push) {
+                            o[this.name] = [o[this.name]];
+                        }
+                        o[this.name].push(this.value || '');
                     } else {
-                        temp = inner(temp, (-1 * args[i]));
+                        if (!placeholderSupport) {
+                            var placeh = eleForm.find("[name='" + this.name + "']").attr("placeholder");
+                            if (this.value == placeh) {
+                                o[this.name] = '';
+                            }
+                            else {
+                                o[this.name] = this.value || '';
+                            }
+                        }
+                        else {
+                            o[this.name] = this.value || '';
+                        }
+
                     }
-                }
-                return temp;
-            };
-            Math.mul = function (p1, p2) {
-                /// <summary>
-                /// 乘法（不固定参数）
-                /// </summary>
-                /// <param name="p1" type="type"></param>
-                /// <param name="p2" type="type"></param>
-                var args = arguments;
-                var inner = function (a, b) {
-                    var m = 0, s1 = a.toString(), s2 = b.toString();
-                    try { m += s1.split(".")[1].length; } catch (e) { }
-                    try { m += s2.split(".")[1].length; } catch (e) { }
-                    return Number(s1.replace(".", "")) * Number(s2.replace(".", "")) / Math.pow(10, m);
-                };
-                var temp = 0;
-                if (args.length > 0) {
-                    temp = 1;
-                    for (var i in args) {
-                        temp = inner(args[i], temp);
-                    }
-                }
-                return temp;
-            };
-            Math.div = function (p1, p2) {
-                /// <summary>
-                /// 除法（不固定参数）
-                /// </summary>
-                /// <param name="p1" type="type"></param>
-                /// <param name="p2" type="type"></param>
-                var args = arguments;
-                var inner = function (a, b) {
-                    var t1 = 0, t2 = 0, r1, r2;
-                    try { t1 = a.toString().split(".")[1].length; } catch (e) { }
-                    try { t2 = b.toString().split(".")[1].length; } catch (e) { }
-                    with (Math) {
-                        r1 = Number(a.toString().replace(".", ""));
-                        r2 = Number(b.toString().replace(".", ""));
-                        return (r1 / r2) * pow(10, t2 - t1);
-                    }
-                };
-                var temp = 0, length = args.length;
-                if (length > 1) {
-                    for (var i in args) {
-                        i = parseInt(i);
-                        if ((i + 1) == length) break;
-                        temp = inner(args[i], args[i + 1]);
-                    }
-                } else { temp = args[0] || 0; }
-                return temp;
+                });
+                return o;
             };
 
             //#endregion
 
-            if (!Banana.name) Banana.name = 'banana.js';
+            //$.fn.tula = function () {
+            //    //图啦  by zhangw 2017-7-17
+            //    //功能：用于检测图片是否已成功加载，否则，会进行3次自检
+            //    $(this).each(function () {
+            //        var that = this;
+            //        if (that.tagName.toLowerCase() != 'img' || that.complete || that.attributes.tula) { return true; }                    
+            //        var src = that.src;
+            //        var img = new Image();
+            //        img.onload = function (e) {
+            //            if (that.attributes.tula) { return; }
+            //            that.src = src;
+            //            that.attributes.tula = true;
+            //        };
+            //        img.onerror = function (e) {
+            //            loop(src);
+            //        };
+            //        var i = 3;
+            //        var loop = function (src) {
+            //            i--;
+            //            if (i <= 0) {
+            //                B.Helper.alert('图片[' + src + ']无法加载');
+            //                return;
+            //            }
+            //            img.src = '';
+            //            img.src = src;
+            //        };
+            //        img.src = src;
+            //    });
+            //};
         };
-        var _close = function () {
-            win.close();
+        var _onError = function (errorMessage, scriptURI, lineNumber, columnNumber, errorObj) {
+            if (!window.console || !window.console.error) { return; }
+            console.error("错误信息：", errorMessage);
+            console.error("出错文件：", scriptURI);
+            console.error("出错行号：", lineNumber);
+            console.error("出错列号：", columnNumber);
+            console.error("错误详情：", errorObj);
         };
+        _init();
         return {
-            init: _init
-            , close: _close
+            id: spaceId
+            , window: win
         };
     };
 
-    /***** Banana.Controls *****/
-    Banana.Controls = (function () {
+    //#region banana.controls
 
+    core.controls = (function () {
         var _confirm = function (opt) {
             var option = {
-                title: ''
-                , content: ''
+                title: '确认操作吗？'
                 , okValue: '确定'
                 , cancelValue: '取消'
                 , ok: function () { }
                 , cancel: function () { }
-                , noCancel: false
-                , lock: true
-                , init: function () { }
-                , esc: false
-                , wrap: "section"
-                , blur: true
-                , blurValue: 0.8
             };
+
             option = $.extend(option, opt);
-            var $wrap = $(option.wrap);
 
-            if ($('body .avgrund-cover').length == 0) {
-                var clientWidth = $(window).width();
-                var avgrundCover = $('<div class="avgrund-cover"></div>').appendTo('body');
-                if (option.blur) {
-                    if (option.blurValue > 0) {
-                        var blur = option.blurValue;
-                        $wrap.css({
-                            "-webkit-filter": "blur(" + blur + "px)",
-                            "-moz-filter": "blur(" + blur + "px)",
-                            "-ms-filter": "blur(" + blur + "px)",
-                            "-o-filter": "blur(" + blur + "px)",
-                            "filter": "blur(" + blur + "px)"
-                        });
-                    }
-                }
-            }
+            var id = 'banana_confirm_' + core.helper.createID();
+            var shadeId = id + '_shade';
 
-            var id = 'banana_avgrund_' + B.Helper.createID();
-            var clientHeight = $(window).height();
-            var offsetTop = $(window).height() / 2 - 50;
-            var html = '';
-            html += '<div id="' + id + '" class="scale-bx" style="top:' + offsetTop + 'px">';
-            html += '<div>';
+            var shadeHtml = '<div banana-id="' + shadeId + '" class="shade"></div>';
 
-            if (option.title != '') {
-                html += '<h4>' + option.title + '</h4>';
-            }
-            if (option.content != '') {
-                html += '<p>' + option.content + '</p>';
-            }
-            html += '</div>';
-            html += '<div style="text-align:right;">';
-            html += '<input type="button" class="btn btn-primary btn-sm" value="' + option.okValue + '" banana-avgrund-cmd="ok" />';
-            if (!option.noCancel) {
-                html += '&nbsp;<input type="button" class="btn btn-default btn-sm" value="' + option.cancelValue + '" banana-avgrund-cmd="close" />';
-            }
+            var html = '<div class="warnBox confirm show" banana-id="' + id + '">';
+            html += '<div class="container">';
+            html += '<p style="padding-top: 10px;">' + option.title + '</p>';
+            html += '<div class="btnBox">';
+            html += '<input type="button"  value="' + option.okValue + '"/>';
+            html += '<input id="cancel" type="button" value="' + option.cancelValue + '"/>';
             html += '</div>';
             html += '</div>';
-            $('body').append(html);
+            html += '</div>';
 
-            var hideAvgrund = function () {
-                B.G.fn.Avgrund.hide();
-                $('.avgrund-cover,#' + id).remove();
-                $('body').css({ 'overflow': 'auto' });
-                document.oncontextmenu = null;
-                if (option.blur) {
-                    $wrap.css({
-                        "-webkit-filter": "",
-                        "-moz-filter": "",
-                        "-ms-filter": "",
-                        "-o-filter": "",
-                        "filter": ""
-                    });
-                }
+            var $confirm = $(html);
+            $(document).find('body:first').prepend($confirm);
+
+            var $shade = $(shadeHtml);
+            $(document).find('body:first').prepend($shade);
+            var h = $(window).height();
+            $shade.height(h);
+            $shade.fadeIn("0.3s");
+
+            var hide = function (ele) {
+                ele.removeClass('show');
+                setTimeout(function () {
+                    ele.remove();
+                    $('[banana-id="' + shadeId + '"]').remove();
+                }, 600);
             };
 
-            $('#' + id).find('[banana-avgrund-cmd="ok"]').on('click', function () {
-                var result = B.Helper.invokeFunction(option.ok);
-                if (result == false) return;
-                hideAvgrund();
-            });
-            $('#' + id).find('[banana-avgrund-cmd="close"]').on('click', function () {
-                var result = B.Helper.invokeFunction(option.cancel);
-                if (result == false) return;
-                hideAvgrund();
-            });
-            if (!option.lock) {
-                $('.avgrund-cover').on('click', function () {
-                    hideAvgrund();
-                });
-            }
-            if (option.esc) {
-                $(document).on('keyup', function (e) {
-                    if (e.keyCode == 27) {
-                        hideAvgrund();
+            $confirm.find('.btnBox>input:first').on('click', function (e) {
+                var $target = $('[banana-id="' + id + '"]');
+                var fn = core.helper.getFunction(option.ok);
+                if (fn != null) {
+                    var result = fn();
+                    if (result == null || result == true) {
+                        hide($target);
                     }
-                });
-            }
-            $('body').css({ 'overflow': 'hidden' });
-            document.oncontextmenu = function (e) { e.preventDefault(); };
-            B.G.fn.Avgrund.show('#' + id);
+                } else {
+                    hide($target);
+                }
+            });
+            $confirm.find('.btnBox>input:last').on('click', function (e) {
+                var $target = $('[banana-id="' + id + '"]');
+                var fn = core.helper.getFunction(option.cancel);
+                if (fn != null) {
+                    var result = fn();
+                    if (result == null || result == true) {
+                        hide($target);
+                    }
+                } else {
+                    hide($target);
+                }
+            });
         };
-
         var _alert = function (opt) {
-            var o = {
-                noCancel: true
+            var option = {
+                title: '系统提示'
+                , okValue: '确定'
+                , ok: function () { }
+                , lock: true //锁住背景
             };
 
             if (typeof opt == 'string') {
-                _confirm($.extend(o, { title: opt }));
+                option.title = opt;
             } else {
-                _confirm($.extend(o, opt));
+                $.extend(option, opt);
+            }
+
+            var id = core.helper.createGUID();
+            var shadeId = id + '_shade';
+
+            var shadeHtml = '<div style="z-index:99999991;" id="' + shadeId + '" class="shade"></div>';
+
+            var html = [];
+            html.push('<div style="z-index:99999992;padding:10px 0;" id="' + id + '" class="warnBox ">');
+            html.push('<p>' + option.title + '</p>');
+            html.push('<div>');
+            html.push('<input type="button" value="' + option.okValue + '">');
+            html.push('</div>');
+            html.push('</div>');
+            var $html = $(html.join(''));
+
+            $(document).find('body:first').prepend($html);
+
+            var $shade = $(shadeHtml);
+            $(document).find('body:first').prepend($shade);
+            var h = $(window).height();
+            $shade.height(h);
+            $shade.fadeIn("0.3s", function () {
+                $('#' + id).addClass('show');
+            });
+
+            var hide = function (ele) {
+                ele.removeClass('show');
+                setTimeout(function () {
+                    ele.remove();
+                    $('#' + shadeId).remove();
+                }, 600);
+            };
+
+            $html.find(':button').on('click', function () {
+                core.helper.invokeFunction(option.ok);
+                hide($('#' + id));
+            });
+            if (!option.lock) {
+                $(document).on('click', '#' + shadeId, function () {
+                    hide($('#' + id));
+                });
+            }
+        };
+        var _tip = function (msg) {
+            var option = {
+                sticky: false
+                , header: '提示'
+                , life: 1500
+            };
+            if (arguments.length > 1) {
+                switch (_getType(arguments[1])) {
+                    case 'object':
+                        option = $.extend({}, option, arguments[1]);
+                        break;
+                    case 'function':
+                        option.open = arguments[1];
+                        break;
+                }
+            }
+            if (core.helper.getType(core.g.window.$.jGrowl) === 'function') {
+                core.g.window.$.jGrowl(msg, option);
+            } else {
+                alert(msg);
+            }
+        };
+        return {
+            confirm: _confirm
+            , alert: _alert
+            , tip: _tip
+        }
+    })();
+
+    //#endregion
+
+    //#region banana.thread
+
+    core.thread = (function () {
+
+        var _detection = function () {
+            if (!window.Worker) {
+                var paths = document.getElementsByTagName("script"),
+                    srcPath = paths[paths.length - 1].src;
+
+                window.getThreadPath = function (path) {
+                    return srcPath.replace(/[^\/]*$/, path);
+                }
+
+                window.Worker = function (src) {
+                    var iframe = document.createElement("iframe");
+                    iframe.style.cssText = "visibility:hidden;";
+                    document.body.appendChild(iframe);
+                    var text = ['<html><head>',
+                        '<meta http-equiv="X-UA-Compatible" content="IE=edge">',
+                        '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">',
+                        '</head></html>'].join();
+                    var doc = iframe.contentWindow.document, head, script;
+                    doc.open();
+                    doc.write(text);
+                    doc.close();
+
+                    var jsFile = getThreadPath(src);
+                    head = doc.getElementsByTagName("head")[0];
+                    script = doc.createElement("script");
+                    script.type = "text/javascript";
+                    script.src = jsFile;
+                    head.appendChild(script);
+
+                    this._win = iframe.contentWindow;
+                    var self = this;
+                    this._win.postMessage = function (msg) {
+                        self.onmessage({ data: msg });
+                    }
+                }
+
+                Worker.prototype.postMessage = function (msg) {
+                    var _win = this._win, self = this;
+
+                    var timer = setInterval(function () {
+                        if (_win.onmessage) {
+                            //IE兼容模式下不允许直接调用onmessage方法
+                            _win.onmessage2 = _win.onmessage;
+                            _win.onmessage2({ data: msg });
+                            self.postMessage = function (msg) {
+                                _win.onmessage2({ data: msg });
+                            }
+                            clearInterval(timer);
+                        }
+                    }, 100);
+                }
+
+                Worker.prototype.onmessage = function (evt) {
+                    //console.log(evt);
+                }
+
+                window.Worker = Worker;
             }
         };
 
-        var _combobox = function (opt) {
-            /// <summary>
-            /// combobox
-            /// </summary>
-            /// <param name="opt" type="object"></param>
+        var WorkerThread = function (data) {
+            this._worker = new Worker("/assets/js/banana.thread.js");
+            this._completes = {};
+            this._task_id = 0;
+            this.data = data || {};
 
-            //selections
-            var currentSelection = -1;
-            var currentProposals = [];
-
-            var option = {
-                target: ''
-                , height: 30
-                , width: 80
-                , placeholder: ''//占位符
-                , hints: []//待匹配的数据数组
-                , ajaxUrl: ''//获取数据的url
-                , ajaxMatch: false //是否使用服务端匹配规则
-                , ajaxData: function () { return {}; } //获取前置ajax参数
-                , showButton: false//是否显示下拉按钮
-                , onChange: function (d) { }//选择一个项
-                , noKeyQuery: true//空关键字时加载
-                , beforeSend: function () { return true; }//发送请求之前
-            };
-            $.extend(option, opt);
-            B.Helper.log(option);
-
-
-            //是否异步获取json
-            var asyncHint = false;
-            if ($.trim(option.ajaxUrl) != '') asyncHint = true;
-
-            //获取匹配数据
-            var queryHints = function () {
-                var ajaxData = B.Helper.invokeFunction(option.ajaxData);
-
-                if (!ajaxData) { input.val(''); return; }
-
-                if (arguments.length > 1) {
-                    if (ajaxData == null || typeof ajaxData != 'object') { ajaxData = {}; }
-                    ajaxData['keyword'] = arguments[1];
-                }
-
-                var callback = arguments[0];
-                B.Helper.ajax({
-                    url: option.ajaxUrl
-                    , data: ajaxData
-                    , onsuccess: function (data) {
-                        option.hints = data;
-                        B.Helper.invokeFunction(callback);
-                    }
-                    , onerror: function () {
-                        proposalList.append($('<li class="banana-proposal" data-value="">数据请求失败</li>'));
-                    }
-                });
-            };
-
-            //原始dom
-            var target = $(option.target);
-
-            var setData = function (obj) {
-                if (obj.value == '') {
-                    B.Helper.log(input, '数据清空');
+            var self = this;
+            this._worker.onmessage = function (evt) {
+                var ret = evt.data;
+                if (ret.__UI_TASK__) {
+                    //run on ui task
+                    var fn = (new Function("return " + ret.__UI_TASK__))();
+                    fn(ret.data);
                 } else {
-                    B.Helper.log(input, obj);
+                    self.data = ret.data;
+                    self._completes[ret.taskId] && self._completes[ret.taskId](ret);
                 }
+            }
+        };
 
-                target.val(obj.value);
-                target.data('text', obj.text);
-                input.val(obj.text);
-                option.onChange(obj);
+        WorkerThread.prototype.run = function (task, complete) {
+            var _task = {
+                __THREAD_TASK__: task.toString(),
+                data: this.data,
+                taskId: this._task_id
             };
-            var getData = function () {
+            this._completes[this._task_id++] = complete;
+            this._worker.postMessage(_task);
+        };
+
+        var _startNew = function (sharedObj) {
+            /// <summary>
+            /// 创建一个线程内的任务
+            /// </summary>
+            /// <param name="sharedObj">共享对象[选填]</param>
+            /// <returns type="WorkerThread"></returns>
+
+            _detection();
+            if (!window.Worker) {
                 return {
-                    text: target.data('text')
-                    , value: target.val()
-                };
-            };
-
-            var id = 'banana_combobox_' + B.Helper.createID();
-
-            //container
-            var searchContainer = $('<div id="' + id + '"></div>').addClass('banana-combobox-container');
-
-            //text input		
-            var input = $('<input class="form-control input-sm" type="text" autocomplete="off" name="query" placeholder="' + option.placeholder + '" >')
-                .addClass('banana-combobox-input').val(target.data('text'));
-
-            //proposals
-
-            var proposals = $('<div></div>').addClass('banana-combobox-proposal');
-            var proposalList = $('<ul></ul>').addClass('banana-combobox-proposal-list');
-            proposals.append(proposalList);
-
-            //处理页面高度
-            var restHeight = $(window).height() - target.offset().top - 120;
-            if (restHeight < 400) {
-                //console.log('设置高度',restHeight);
-                proposals.css({
-                    "max-height": restHeight
-                });
+                    run: function () {
+                        alert('您的浏览器不支持websocket');
+                    }
+                }
             }
-
-            input.on('keydown', function (e) {
-                if (t) {
-                    clearTimeout(t); t = null; return;
-                }
-                switch (e.which) {
-                    case 38: // Up arrow
-                        e.preventDefault();
-                        $('ul.banana-combobox-proposal-list li').removeClass('selected');
-                        if ((currentSelection - 1) >= 0) {
-                            currentSelection--;
-                            $("ul.banana-combobox-proposal-list li:eq(" + currentSelection + ")")
-                                .addClass('selected');
-                        } else {
-                            currentSelection = -1;
-                        }
-                        break;
-                    case 40: // Down arrow
-                        e.preventDefault();
-                        if ((currentSelection + 1) < currentProposals.length) {
-                            $('ul.banana-combobox-proposal-list li').removeClass('selected');
-                            currentSelection++;
-                            $("ul.banana-combobox-proposal-list li:eq(" + currentSelection + ")")
-                                .addClass('selected');
-                        }
-                        break;
-                    case 13: // Enter
-                        if (currentSelection < 0) {
-                            return;
-                        }
-
-                        var $proposal = $("ul.banana-combobox-proposal-list li:eq(" + currentSelection + ")");
-
-                        currentSelection = -1;
-                        proposalList.empty();
-
-                        var data = {
-                            'text': $proposal.html()
-                            , 'value': $proposal.data('value')
-                        };
-
-                        setData(data);
-                        break;
-                    case 27: // Esc button
-                        currentSelection = -1;
-                        proposalList.empty();
-                        setData({ 'text': '', 'value': '' });
-                        break;
-                }
-            });
-
-            var queryFn = function () {
-                currentProposals = [];
-                currentSelection = -1;
-                proposalList.empty();
-
-                var result = B.Helper.invokeFunction(option.beforeSend);
-                if (result === false) {
-                    B.Helper.log('beforeSend blocked.'); return;
-                }
-
-                proposalList.append($('<li class="banana-proposal"><img src="/img/load.gif" style="width:14px;height:14px;">&nbsp;加载中...</li>'));
-
-                if (option.ajaxMatch == true) {
-                    queryHints(function () {
-                        proposalList.empty();
-
-                        if (option.hints == null || option.hints.length == 0) {
-                            proposalList.append($('<li class="banana-proposal" data-value="">无数据</li>'));
-                        }
-
-                        $(option.hints).each(function (a, b) {
-                            currentProposals.push(b);
-
-                            var element = $('<li data-value="' + b['value'] + '"></li>')
-                                .text(b['text'])
-                                .addClass('banana-proposal')
-                                .on('click', function () {
-                                    var data = {
-                                        'text': $(this).html()
-                                        , 'value': $(this).data('value')
-                                    };
-                                    proposalList.empty();
-                                    setData(data);
-                                })
-                                .mouseenter(function () {
-                                    $(this).addClass('selected');
-                                })
-                                .mouseleave(function () {
-                                    $(this).removeClass('selected');
-                                });
-
-                            if (b['text'] == input.val()) {
-                                element.addClass('selected');
-                            }
-
-                            proposalList.append(element);
-                        });
-
-                        if ($('.banana-proposal.selected').length > 0) {
-                            currentSelection = $('.banana-proposal.selected').index('.banana-proposal');
-                        }
-
-                    }, input.val());
-                }
-                else {
-                    queryHints(function () {
-                        var word = "^" + input.val() + ".*";
-                        proposalList.empty();
-
-                        if (option.hints == null || option.hints.length == 0) {
-                            proposalList.append($('<li class="banana-proposal" data-value="">无数据</li>'));
-                        }
-
-                        $(option.hints).each(function (a, b) {
-                            if (b['text'].match(word)) {
-                                currentProposals.push(b);
-                                var element = $('<li data-value="' + b['value'] + '"></li>')
-                                    .html(b['text'])
-                                    .addClass('banana-proposal')
-                                    .click(function () {
-                                        var data = {
-                                            'text': $(this).html()
-                                            , 'value': $(this).data('value')
-                                        };
-                                        proposalList.empty();
-                                        setData(data);
-                                    })
-                                    .mouseenter(function () {
-                                        $(this).addClass('selected');
-                                    })
-                                    .mouseleave(function () {
-                                        $(this).removeClass('selected');
-                                    });
-                                proposalList.append(element);
-                            }
-                        });
-                    });
-                }
-            };
-
-            //focus
-            var i, j;
-            input.on("paste keyup", function (e) {
-                if (t) {
-                    clearTimeout(t); t = null; return;
-                }
-                if (e.which != 13 && e.which != 27 && e.which != 38 && e.which != 40) {
-                    if (option.noKeyQuery == true || input.val() != '') {
-
-                        //延迟请求
-                        j = setTimeout(function () {
-                            if (!j || j == null) return;
-                            clearTimeout(j);
-                            j = null;
-
-                            queryFn();
-                        }, 300);
-
-                    }
-                }
-            });
-
-            $(document).on('click', function (e) {
-                if (!$(e.target).hasClass('banana-combobox-input') && !$(e.target).hasClass('banana-combobox-button') && !$(e.target).is('i')) {
-                    //console.log('::not', e.target);
-
-                    //取消上次的请求
-                    if (j && j != null) {
-                        clearTimeout(j);
-                        j = null;
-                    }
-
-                    t = setTimeout(function () {
-                        if (t) { clearTimeout(t); t = null; }
-
-                        //光标离开时，上次的值不等于本次的值，清空数据
-                        if (getData().text != '' && getData().text != input.val()) {
-                            setData({ 'text': '', 'value': '' });
-                        }
-
-                        currentSelection = -1;
-                        proposalList.find('*').slideUp(200, function () {
-                            proposalList.empty();
-                        });
-                    }, 300);
-
-                }
-                e.stopPropagation();
-            });
-
-            var t;
-            input.on('blur', function (e) {
-                return;
-            });
-
-            if (option.showButton == true) {
-                var button = $('<span><i></i></span>').addClass("banana-combobox-button");
-                button.on('click', function () {
-                    if (t) {
-                        clearTimeout(t); t = null;
-                    }
-                    queryFn();
-                    input.focus();
-                });
+            else {
+                return new WorkerThread(sharedObj);
             }
-
-            searchContainer.append(input).append(button);
-            searchContainer.append(proposals);
-
-            target.hide();
-            target.before(searchContainer);
-            return {
-                id: id
-                , destory: function () {
-                    $('#' + id).remove();
-                    target.show();
-                }
-                , clear: function () {
-                    setData({
-                        'text': '', 'value': ''
-                    });
-                }
-                , setAjaxData: function (obj) {
-                    option.ajaxData = function () {
-                        return obj;
-                    };
-                }
-                , getData: getData
-            };
         };
 
         return {
-            alert: _alert
-            , confirm: _confirm
-            , combobox: _combobox
+            start: _startNew
         }
-
     })();
 
-    /***** Banana.Call *****/
-    Banana.Call = (function () {
+    //#endregion
+
+    //#region banana.call
+
+    core.call = (function () {
         var events = [];
         var inited = false;
         var win = window;
         var handler = function () {
-            if (inited) return;
+            if (inited) { return; }
             for (var i = 0; i < events.length; i++) {
                 events[i].call(win, { 'window': win, 'initialization': true });
             }
@@ -2086,93 +2105,50 @@
             delete events;
         };
         $(function () {
-            if (!win.space) {
-                win.space = new Banana.Space(win);
-                win.space.init();
+            if (!win.banana.space) {
+                var space = new Space(win);
+                core.space = space;
             }
-            Banana.Helper.log('banana call');
+            core.helper.log('banana call');
             handler();
-            Banana.Helper.log('end banana call');
+            core.helper.log('end banana call');
         });
-        return function (fn) {
+        return function (callback) {
             /// <summary>
             /// Banana启动方法
             /// </summary>
             /// <param name="fn">方法</param>
-            if (typeof fn !== 'function') return;
+            if (core.helper.getFunction(callback) === null) { return; }
             if (inited) {
-                Banana.Helper.log('banana call');
-                fn.call(win, { 'window': win, 'initialization': false });
-                Banana.Helper.log('end banana call');
+                core.helper.log('banana call');
+                callback.call(win, { 'window': win, 'initialization': false });
+                core.helper.log('end banana call');
             }
-            else {
-                events.push(fn);
+            else { events.push(callback); }
+        }
+    })();
+
+    //#endregion
+
+    //#region banana.debug
+
+    core.debug = (function () {
+        /// <summary>
+        /// debug mode
+        /// </summary>
+        return function (callback) {
+            if (DEBUG === true) {
+                core.helper.log('Debug模式下调用测试函数');
+                core.helper.invokeFunction(callback);
             }
         }
     })();
 
+    //#endregion
+
     //set alias name
-    root.B = root.Banana = Banana;
-
-    var noop = function () {
-        Banana.Helper.log('noop call');
-    };
-
+    root.banana = core;
+    var noop = function () { core.helper.log('noop call'); };
     //the first call to initialize space
-    Banana.Call($ ? ($.noop ? $.noop : noop) : noop);
-
+    core.call($ ? ($.noop ? $.noop : noop) : noop);
 });
-
-/*!
- * 模板示例
-   <script id="myTemplate" type="banana-template">
-       <tr>
-           <td>{{id}}</td>
-           <td>{{name}}</td>
-           <td>{{phone}}</td>
-           <td>
-               <a href="javascript:alert('编辑 {{name}}');">编辑</a>
-               <a href="javascript:alert('禁用 {{name}}');">禁用</a>
-           </td>
-       </tr>
-   </script>
- */
-
-/*
-var socket = new WebSocket('ws://127.0.0.1:6188');
-// 打开Socket 
-socket.onopen = function (event) {
-    console.log('socket onopen');
-    // 发送一个初始化消息
-    //socket.send('I am the client and I\'m listening!');
-
-    // 监听消息
-    socket.onmessage = function (event) {
-        console.log('onmessage', event);
-    };
-
-    // 监听Socket的关闭
-    socket.onclose = function (event) {
-        console.log('onclose', event);
-    };
-
-    // 关闭Socket.... 
-    //socket.close() 
-};
-socket.onerror = function (event) {
-    console.log('onerror',event);
-};
-*/
-
-/*
-
-  *0 ：对应常量CONNECTING (numeric value 0)，
-   *正在建立连接连接，还没有完成。The connection has not yet been established.
-   *1 ：对应常量OPEN (numeric value 1)，
-   *连接成功建立，可以进行通信。The WebSocket connection is established and communication is possible.
-   *2 ：对应常量CLOSING (numeric value 2)
-   *连接正在进行关闭握手，即将关闭。The connection is going through the closing handshake.
-   *3 : 对应常量CLOSED (numeric value 3)
-   *连接已经关闭或者根本没有建立。The connection has been closed or could not be opened.
-
-*/
