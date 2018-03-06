@@ -1,39 +1,39 @@
 onmessage = function (e) {
-    var a = e.data;
-    if (a && a.__THREAD_TASK__) {
-        var d = a.__THREAD_TASK__;
+    var threadArgs = e.data;
+    if (threadArgs && threadArgs.__THREAD_TASK__) {
+        var threadTask = threadArgs.__THREAD_TASK__;
         try {
-            var f = (new Function("return " + d))(),
-            b = {
-                threadSignal: !0,
-                sleep: function (a) {
-                    b.threadSignal = !1;
-                    setTimeout(c, a)
+            var f = (new Function("return " + threadTask))(),
+                b = {
+                    threadSignal: !0,
+                    sleep: function (threadArgs) {
+                        b.threadSignal = !1;
+                        setTimeout(c, threadArgs)
+                    },
+                    runOnUIThread: function (b) {
+                        postMessage({
+                            __UI_TASK__: b.toString(),
+                            data: threadArgs.data
+                        });
+                    }
                 },
-                runOnUiThread: function (b) {
+                c = function () {
+                    b.threadSignal = !0;
+                    var c = f.call(b, threadArgs.data);
                     postMessage({
-                        __UI_TASK__: b.toString(),
-                        sharedObj: a.sharedObj
+                        error: null,
+                        returnValue: c,
+                        __THREAD_TASK__: threadTask,
+                        data: threadArgs.data,
+                        taskId: threadArgs.taskId
                     });
-                }
-            },
-            c = function () {
-                b.threadSignal = !0;
-                var c = f.call(b, a.sharedObj);
-                postMessage({
-                    error: null,
-                    returnValue: c,
-                    __THREAD_TASK__: d,
-                    sharedObj: a.sharedObj,
-                    taskId: a.taskId
-                });
-            };
+                };
             c();
-        } catch (g) {
+        } catch (error) {
             postMessage({
-                error: g.toString(),
+                error: error.toString(),
                 returnValue: null,
-                sharedObj: a.sharedObj
+                data: threadArgs.data
             });
         }
     }
