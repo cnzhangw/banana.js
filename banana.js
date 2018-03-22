@@ -19,13 +19,7 @@
                 }, count > 0 ? 1000 : 5000);//最后一次放宽检测时间间隔
             } else {
                 if (handler && handler > 0) { clearTimeout(handler); }
-                var msg = 'banana requires jquery or zepto';
-                throw msg;
-                //if (root === root.top || root.location.href.toLowerCase() === root.top.location.href.toLowerCase()) {
-                //    throw msg;
-                //} else {
-                //    throw msg;
-                //}
+                throw 'banana requires jquery or zepto';
             }
         } else {
             if (handler && handler > 0) { clearTimeout(handler); }
@@ -64,7 +58,7 @@
     var root = this; // window
     var core = window.banana || {}; // namespace
     core.name = 'banana';
-    core.version = 'v1.6 banana，朋友们都说好。';
+    core.version = 'v1.7 banana，朋友们都说好。';
     var DEBUG = false;
 
     //#region banana.constant
@@ -712,18 +706,20 @@
                     break;
             }
             if (fn != null) {
-                var args = arguments;
-                if (args.length > 1) {
+                var args = [];//arguments;
+                if (arguments.length > 1) {
+                    //[].shift.call(args);
+                    args = Array.prototype.slice.apply(arguments);
                     [].shift.call(args);
-                    args = arguments;
                 }
-                return fn.apply(window, (function () {
-                    var params = [];
-                    for (var i in args) {
-                        params.push(args[i]);
-                    }
-                    return params;
-                }()));
+                //return fn.apply(window, (function () {
+                //    var params = [];
+                //    for (var i in args) {
+                //        params.push(args[i]);
+                //    }
+                //    return params;
+                //}()));
+                return fn.apply(window, args);
             }
         };
         var _ajax = function (option) {
@@ -782,7 +778,7 @@
                         B.Helper.error("ajax请求超时:", this.url);
                     }
 
-                    var _oncomplete = Banana.Helper.getFunction(this.onComplete);
+                    var _oncomplete = core.helper.getFunction(this.onComplete);
                     if (_oncomplete != null) { _oncomplete(status); }
                 }
                 , success: function (data, textStatus, jqXHR) {
@@ -792,7 +788,7 @@
                         $(defaults.target).removeProp("disabled");
                     }
 
-                    var _onsuccess = Banana.Helper.getFunction(this.onSuccess);
+                    var _onsuccess = core.helper.getFunction(this.onSuccess);
                     if (_onsuccess != null) { _onsuccess(data); }
                 }
                 , error: function (jqXHR, textStatus, errorThrown) {
@@ -800,7 +796,7 @@
                     if (defaults.target != null) {
                         $(defaults.target).removeProp("disabled");
                     }
-                    var _onerror = Banana.Helper.getFunction(this.onFail);
+                    var _onerror = core.helper.getFunction(this.onFail);
                     if (_onerror != null) { _onerror(jqXHR); }
                 }
                 , statusCode: {
@@ -824,7 +820,7 @@
                 }, settings);
             }
 
-            Banana.Helper.log('ajax data', settings.data);
+            core.helper.log('ajax data', settings.data);
             //X-HTTP-Method-Override  
             if (settings.type.toUpperCase() != "GET" && settings.type.toUpperCase() != "POST") {
                 settings.headers = { "X-HTTP-Method-Override": settings.type }
@@ -1415,6 +1411,15 @@
                 return str;
             }
         };
+        var _go = function (url, win,preUrl) {
+            win = win || root;
+            try {
+                preUrl = (preUrl || win.location.href).toLowerCase();
+                win.history.pushState(null, null, preUrl);
+            } catch (error) { } finally {
+                win.location.replace(url);
+            }
+        };
         return {
             log: _log
             , warn: _warn
@@ -1453,6 +1458,7 @@
             , getFile: _getFile
             , shortText: _shortText
             , storage: _storage
+            , go: _go
         };
     })();
 
@@ -1489,19 +1495,33 @@
                 };
             })();
             $(win.document).on('click', '*[' + core.constant.COMMAND_KEY + ']', function (e) {
+                var $target = $(this);
+                var _args = $target.attr(core.constant.COMMAND_ARGS);
+                if (_args != null && _args != '') {
+                    try {
+                        if (_args.substr(0, 1) === '{') {
+                            _args = $.parseJSON(_args.replace(/'/g, '"'));
+                        }
+                    } catch (err) { }
+                }
+
                 var cmdtrigger = core.helper.getFunction(core.constant.FUNCTION_COMMAND_TRIGGER);
                 if (cmdtrigger != null) {
-                    var $target = $(this);
-                    var _args = $target.attr(core.constant.COMMAND_ARGS);
-                    if (_args != null && _args != '') {
-                        try {
-                            if (_args.substr(0, 1) === '{') {
-                                _args = $.parseJSON(_args.replace(/'/g, '"'));
-                            }
-                        } catch (err) { }
-                    }
-                    cmdtrigger.call(win, { target: $target, cmd: $target.attr(core.constant.COMMAND_KEY), args: _args });
+                    cmdtrigger.call(win, {
+                        target: $target
+                        , cmd: $target.attr(core.constant.COMMAND_KEY)
+                        , args: _args
+                    });
                 }
+
+                $(event_handles).each(function (index, item) {
+                    item.call(win, {
+                        target: $target
+                        , cmd: $target.attr(core.constant.COMMAND_KEY)
+                        , args: _args
+                    });
+                });
+
             });
             var handler = function () {
                 var startup = core.helper.getFunction(core.constant.FUNCTION_STARTUP, win);
@@ -1542,8 +1562,14 @@
             //#region string
 
             String.prototype.toDate = function () {
-                var date = new Date(parseInt(this.replace("/Date(", "").replace(")/", ""), 10));
-                return date;
+                try {
+                    var date = new Date(this.replace("/Date(", "").replace(")/", ""));
+                    if (date.getFullYear() === 1970) {
+                        return core.helper.toDate(this);
+                    }
+                    return date;
+                } catch (err) { }
+                return core.helper.toDate(this);
             };
 
             String.prototype.dateFormat = function () {
@@ -1594,14 +1620,14 @@
                 /// <summary>
                 /// 获取字节长度
                 /// </summary>
-                return Banana.Helper.getByteLength(this);
+                return core.helper.getByteLength(this);
             };
 
             String.prototype.ltrim = function () {
                 /// <summary>
                 /// 去除字符串左侧空白字符
                 /// </summary>
-                if (!Banana.Helper.isNullOrUndefined(this)) {
+                if (!core.helper.isNullOrUndefined(this)) {
                     return this.replace(/(^\s*)/g, "");
                 }
                 return '';
@@ -1611,7 +1637,7 @@
                 /// <summary>
                 /// 去除字符串右侧空白字符
                 /// </summary>
-                if (!Banana.Helper.isNullOrUndefined(this)) {
+                if (!core.helper.isNullOrUndefined(this)) {
                     return this.replace(/(\s*$)/g, "");
                 }
                 return '';
@@ -1621,7 +1647,7 @@
                 /// <summary>
                 /// 指示指定的字符串是 null、空还是仅由空白字符组成。
                 /// </summary>
-                if (!Banana.Helper.isNullOrUndefined(this)) {
+                if (!core.helper.isNullOrUndefined(this)) {
                     if (this.constructor.name.toLowerCase() == 'string' && this.trim().length == 0) {
                         return true;
                     }
@@ -1814,156 +1840,76 @@
     //#region banana.controls
 
     core.controls = (function () {
-        var _confirm = function (opt) {
-            var option = {
-                title: '确认操作吗？'
-                , okValue: '确定'
-                , cancelValue: '取消'
-                , ok: function () { }
-                , cancel: function () { }
+        var _confirm = function (content, options, yes, cancel) {
+            var defaults = {
+                skin: 'layui-layer-molv' //样式类名
+                , closeBtn: 0
+                , anim: 2
             };
 
-            option = $.extend(option, opt);
-
-            var id = 'banana_confirm_' + core.helper.createID();
-            var shadeId = id + '_shade';
-
-            var shadeHtml = '<div banana-id="' + shadeId + '" class="shade"></div>';
-
-            var html = '<div class="warnBox confirm show" banana-id="' + id + '">';
-            html += '<div class="container">';
-            html += '<p style="padding-top: 10px;">' + option.title + '</p>';
-            html += '<div class="btnBox">';
-            html += '<input type="button"  value="' + option.okValue + '"/>';
-            html += '<input id="cancel" type="button" value="' + option.cancelValue + '"/>';
-            html += '</div>';
-            html += '</div>';
-            html += '</div>';
-
-            var $confirm = $(html);
-            $(document).find('body:first').prepend($confirm);
-
-            var $shade = $(shadeHtml);
-            $(document).find('body:first').prepend($shade);
-            var h = $(window).height();
-            $shade.height(h);
-            $shade.fadeIn("0.3s");
-
-            var hide = function (ele) {
-                ele.removeClass('show');
-                setTimeout(function () {
-                    ele.remove();
-                    $('[banana-id="' + shadeId + '"]').remove();
-                }, 600);
-            };
-
-            $confirm.find('.btnBox>input:first').on('click', function (e) {
-                var $target = $('[banana-id="' + id + '"]');
-                var fn = core.helper.getFunction(option.ok);
-                if (fn != null) {
-                    var result = fn();
-                    if (result == null || result == true) {
-                        hide($target);
-                    }
-                } else {
-                    hide($target);
-                }
-            });
-            $confirm.find('.btnBox>input:last').on('click', function (e) {
-                var $target = $('[banana-id="' + id + '"]');
-                var fn = core.helper.getFunction(option.cancel);
-                if (fn != null) {
-                    var result = fn();
-                    if (result == null || result == true) {
-                        hide($target);
-                    }
-                } else {
-                    hide($target);
-                }
-            });
-        };
-        var _alert = function (opt) {
-            var option = {
-                title: '系统提示'
-                , okValue: '确定'
-                , ok: function () { }
-                , lock: true //锁住背景
-            };
-
-            if (typeof opt == 'string') {
-                option.title = opt;
+            var opt = {};
+            if (arguments.length == 2) {
+                yes = arguments[1];
+                opt = $.extend({}, defaults)
             } else {
-                $.extend(option, opt);
+                opt = $.extend({}, defaults, options);
             }
 
-            var id = core.helper.createGUID();
-            var shadeId = id + '_shade';
-
-            var shadeHtml = '<div style="z-index:99999991;" id="' + shadeId + '" class="shade"></div>';
-
-            var html = [];
-            html.push('<div style="z-index:99999992;padding:10px 0;" id="' + id + '" class="warnBox ">');
-            html.push('<p>' + option.title + '</p>');
-            html.push('<div>');
-            html.push('<input type="button" value="' + option.okValue + '">');
-            html.push('</div>');
-            html.push('</div>');
-            var $html = $(html.join(''));
-
-            $(document).find('body:first').prepend($html);
-
-            var $shade = $(shadeHtml);
-            $(document).find('body:first').prepend($shade);
-            var h = $(window).height();
-            $shade.height(h);
-            $shade.fadeIn("0.3s", function () {
-                $('#' + id).addClass('show');
-            });
-
-            var hide = function (ele) {
-                ele.removeClass('show');
-                setTimeout(function () {
-                    ele.remove();
-                    $('#' + shadeId).remove();
-                }, 600);
-            };
-
-            $html.find(':button').on('click', function () {
-                core.helper.invokeFunction(option.ok);
-                hide($('#' + id));
-            });
-            if (!option.lock) {
-                $(document).on('click', '#' + shadeId, function () {
-                    hide($('#' + id));
-                });
-            }
+            window.top.layer.confirm(content, opt, function (index) {
+                yes();
+                window.top.layer.close(index);
+            }, cancel);
         };
-        var _tip = function (msg) {
-            var option = {
-                sticky: false
-                , header: '提示'
-                , life: 1500
+        var _alert = function (content, options, yes) {
+            var defaults = {
+                skin: 'layui-layer-molv' //样式类名
+                , closeBtn: 0
+                , anim: 2
             };
-            if (arguments.length > 1) {
-                switch (_getType(arguments[1])) {
-                    case 'object':
-                        option = $.extend({}, option, arguments[1]);
-                        break;
-                    case 'function':
-                        option.open = arguments[1];
-                        break;
+            window.top.layer.alert(content, $.extend({}, defaults, options), yes);
+        };
+        var _tips = function (content, follow, options) {
+            var defaults = {
+                tips: 1
+            };
+            layer.tips(content, $.extend({}, defaults, options), yes);
+        };
+        var _msg = function (content, options, end) {
+            var defaults = {
+                anim: 6
+            };
+            window.top.layer.msg(content, $.extend({}, defaults, options), end);
+        };
+        var _open = function (options) {
+            var defaults = {
+                type: 2
+                , skin:  'layui-layer-molv' //'layui-layer-lan'
+                , title: '个人信息'
+                , shadeClose: false
+                , closeBtn: 0
+                , shade: 0.5
+                , anim: 2
+                , resize: false
+                , area: ['500px', '400px']
+                , content: ''
+                , btn: ['确定']
+                , yes: function (index) {
+
+                    layer.close(index);
                 }
-            }
-            if (core.helper.getType(core.g.window.$.jGrowl) === 'function') {
-                core.g.window.$.jGrowl(msg, option);
-            } else {
-                alert(msg);
-            }
-        };
+                , success: function () { }
+                , top: false //是否最外层弹窗
+            };
+            var opt = $.extend({}, defaults, options);
+            var layer = (opt.top ? window.top : window).layer;
+            return layer.open(opt);
+        };        
         return {
             confirm: _confirm
             , alert: _alert
-            , tip: _tip
+            , msg: _msg
+            , tips: _tips
+            , open: _open
         }
     })();
 
@@ -2146,9 +2092,35 @@
 
     //#endregion
 
+    var event_handles = [];
+    core.on = (function () {
+        return function (fn) {
+            if ($.isFunction(fn)) {
+                event_handles.push(fn);
+            }
+        }
+    })();
+
     //set alias name
     root.banana = core;
     var noop = function () { core.helper.log('noop call'); };
     //the first call to initialize space
     core.call($ ? ($.noop ? $.noop : noop) : noop);
+
+    $.ajaxSettings.beforeSend = function (xhr, request) {
+        //console.log( request.headers ) 
+        // 在这里加上你的 token 
+        //xhr.setRequestHeader('token', '88888888');
+        //loading层
+        if (core.helper.getType(root['layer']) === 'object') {
+            var index = root.layer.load(1, {
+                shade: [0.5, '#000']
+            });
+            xhr.complete = (function (i) {
+                return function () {
+                    root.layer.close(i);
+                }
+            })(index);
+        }
+    };
 });
