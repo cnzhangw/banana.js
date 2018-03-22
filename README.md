@@ -4,8 +4,8 @@ version 1.7
 
 banana.js is a front-end framework tool set, you can save time for the development of a large number of details, which depends on jquery.
 
-//定义模版
-    <script type="text/template" id="bodyTemplate">
+    <!--定义模版-->
+    <script type="text/template" id="bodyTemplate">
         {{#.}}
         <tr>
             <td>{{name}}</td>
