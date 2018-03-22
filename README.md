@@ -39,3 +39,18 @@ banana.js is a front-end framework tool set, you can save time for the developme
                 , view: data //数据
                 , template: '#bodyTemplate' //模版选择器
             });
+            
+                <table>
+        <thead>
+            <tr>
+                <th>姓名</th>
+                <th>年龄</th>
+                <th>性别</th>
+            </tr>
+        </thead>
+        <tbody id="tbody">
+            <tr>
+                <td>加载中...</td>
+            </tr>
+        </tbody>
+    </table>
